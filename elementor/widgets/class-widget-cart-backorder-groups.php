@@ -372,8 +372,7 @@ class WMBF_Widget_Cart_Backorder_Groups extends Widget_Base {
 				<td class="wc-cbs-item-price">
 					<?php
 					if ( $quantity > 0 && $item['total_qty'] > 0 ) {
-						$item_total = ( $item['cart_item']['line_total'] / $item['total_qty'] ) * $quantity;
-						echo wp_kses_post( wc_price( $item_total ) );
+						echo wp_kses_post( wc_price( WMBF_Cart_Grouping::get_item_price( $item ) ) );
 					}
 					?>
 				</td>
@@ -406,8 +405,7 @@ class WMBF_Widget_Cart_Backorder_Groups extends Widget_Base {
 				<span class="wc-cbs-item-price">
 					<?php
 					if ( $quantity > 0 && $item['total_qty'] > 0 ) {
-						$item_total = ( $item['cart_item']['line_total'] / $item['total_qty'] ) * $quantity;
-						echo wp_kses_post( wc_price( $item_total ) );
+						echo wp_kses_post( wc_price( WMBF_Cart_Grouping::get_item_price( $item ) ) );
 					}
 					?>
 				</span>
@@ -446,8 +444,7 @@ class WMBF_Widget_Cart_Backorder_Groups extends Widget_Base {
 					<p class="wc-cbs-item-price">
 						<?php
 						if ( $quantity > 0 && $item['total_qty'] > 0 ) {
-							$item_total = ( $item['cart_item']['line_total'] / $item['total_qty'] ) * $quantity;
-							echo wp_kses_post( wc_price( $item_total ) );
+							echo wp_kses_post( wc_price( WMBF_Cart_Grouping::get_item_price( $item ) ) );
 						}
 						?>
 					</p>

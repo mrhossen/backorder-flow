@@ -86,90 +86,53 @@ class WMBF_Product_Meta {
 
 		// Add inline script for backorder status field toggle.
 		$inline_script = "
-		jQuery(document).ready(function($) {
-			function toggleBackorderStatusField() {
-				var \$field = $('.wc-cbs-backorder-status-field');
-				var manageStock = $('#_manage_stock').is(':checked');
-
-				// Try to find backorders field with multiple methods
-				var \$backordersField = $('#_backorders');
-				if (!\$backordersField.length) {
-					\$backordersField = $('select[name=\"_backorders\"]');
+		jQuery(function($) {
+			function getCheckedOrSelected(name) {
+				var \$radio = $('input[name=\"' + name + '\"]:checked');
+				if (\$radio.length) {
+					return \$radio.val();
 				}
-				if (!\$backordersField.length) {
-					\$backordersField = $('[id\$=\"_backorders\"]');
-				}
-
-				var backorders = \$backordersField.length ? \$backordersField.val() : null;
-
-				// LOGIC: Show our field if:
-				// 1. Stock management is enabled AND
-				// 2. Either backorders field doesn't exist (always show) OR backorders are allowed
-				var shouldShow = false;
-
-				if (manageStock) {
-					if (!\$backordersField.length) {
-						// Backorders field doesn't exist - show our field by default
-						shouldShow = true;
-					} else if (backorders === 'yes' || backorders === 'notify') {
-						// Backorders are explicitly allowed
-						shouldShow = true;
-					} else {
-						shouldShow = false;
-					}
-				} else {
-					shouldShow = false;
-				}
-
-				if (shouldShow) {
-					\$field.show().css('display', 'block');
-					\$field.find('select').prop('disabled', false);
-				} else {
-					\$field.hide();
-					\$field.find('select').prop('disabled', true);
-				}
+				var \$select = $('select[name=\"' + name + '\"]');
+				return \$select.length ? \$select.val() : null;
 			}
 
-			// Run initial check after a small delay to ensure WooCommerce has initialized
-			setTimeout(function() {
-				toggleBackorderStatusField();
-			}, 500);
-
-			// Listen for changes on backorders field
-			$(document).on('change', '#_backorders', function() {
-				toggleBackorderStatusField();
-			});
-
-			// Listen for changes on manage stock checkbox
-			$(document).on('change', '#_manage_stock', function() {
-				setTimeout(toggleBackorderStatusField, 100);
-			});
-
-			// Listen for changes on stock status
-			$(document).on('change', '#_stock_status', function() {
-				setTimeout(toggleBackorderStatusField, 100);
-			});
-
-			// Re-check when inventory tab is clicked
-			$('.inventory_options').on('click', function() {
-				setTimeout(toggleBackorderStatusField, 200);
-			});
-
-			// Re-check periodically in case WooCommerce changes the DOM
-			setInterval(function() {
+			function toggleBackorderStatusField() {
 				var \$field = $('.wc-cbs-backorder-status-field');
-				if (\$field.length && \$field.is(':visible')) {
-					var backorders = $('#_backorders').val();
-					if (backorders !== 'yes' && backorders !== 'notify') {
-						toggleBackorderStatusField();
-					}
-				} else if (\$field.length) {
-					var backorders = $('#_backorders').val();
-					if (backorders === 'yes' || backorders === 'notify') {
-						toggleBackorderStatusField();
-					}
+				if (!\$field.length) {
+					return;
 				}
-			}, 1000);
+
+				var productType = $('#product-type').val();
+				var manageStock = $('#_manage_stock').is(':checked');
+				var backorders = getCheckedOrSelected('_backorders');
+				var stockStatus = getCheckedOrSelected('_stock_status');
+
+				// Show the field when the product can be ordered on backorder:
+				// - variable products (variations can allow backorders and use the parent's status),
+				// - stock managed with backorders allowed,
+				// - stock not managed with the stock status set to 'On backorder'.
+				var shouldShow = 'variable' === productType ||
+					(manageStock && ('yes' === backorders || 'notify' === backorders)) ||
+					(!manageStock && 'onbackorder' === stockStatus);
+
+				\$field.toggle(shouldShow);
+				\$field.find('select').prop('disabled', !shouldShow);
+			}
+
+			toggleBackorderStatusField();
+
+			$(document).on(
+				'change',
+				'input[name=\"_backorders\"], select[name=\"_backorders\"], #_manage_stock, input[name=\"_stock_status\"], select[name=\"_stock_status\"], #product-type',
+				function() {
+					// Run after WooCommerce has shown/hidden its own fields.
+					setTimeout(toggleBackorderStatusField, 50);
+				}
+			);
+
+			$('.inventory_options').on('click', function() {
+				setTimeout(toggleBackorderStatusField, 50);
+			});
 		});
 		";
 
@@ -206,7 +169,7 @@ class WMBF_Product_Meta {
 			array(
 				'id'          => '_wmbf_backorder_status',
 				'label'       => __( 'Backorder Status', 'backorder-flow' ),
-				'description' => __( 'Select a custom backorder status for this product. Only displayed when product is on backorder.', 'backorder-flow' ),
+				'description' => __( 'Select a custom backorder status for this product. Only displayed when the product is on backorder. Variations without their own status use this one.', 'backorder-flow' ),
 				'desc_tip'    => true,
 				'options'     => $options,
 				'value'       => get_post_meta( $post->ID, '_wmbf_backorder_status', true ),
@@ -247,7 +210,7 @@ class WMBF_Product_Meta {
 	 */
 	public function add_variation_backorder_status_field( $loop, $variation_data, $variation ) {
 		$statuses = $this->get_statuses();
-		$options = array( '' => __( 'Default backorder message', 'backorder-flow' ) );
+		$options = array( '' => __( 'Same as parent product', 'backorder-flow' ) );
 
 		foreach ( $statuses as $status ) {
 			if ( isset( $status['enabled'] ) && $status['enabled'] ) {
@@ -282,8 +245,11 @@ class WMBF_Product_Meta {
 			return;
 		}
 
-		// Verify nonce - WooCommerce uses 'woocommerce_meta_nonce' for product data.
-		if ( ! isset( $_POST['woocommerce_meta_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ), 'woocommerce_save_data' ) ) {
+		// Verify nonce. Variations are saved over AJAX ('save-variations' nonce in 'security'),
+		// or with the product form when JavaScript is unavailable ('woocommerce_meta_nonce').
+		$ajax_nonce = isset( $_POST['security'] ) ? sanitize_text_field( wp_unslash( $_POST['security'] ) ) : '';
+		$form_nonce = isset( $_POST['woocommerce_meta_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['woocommerce_meta_nonce'] ) ) : '';
+		if ( ! wp_verify_nonce( $ajax_nonce, 'save-variations' ) && ! wp_verify_nonce( $form_nonce, 'woocommerce_save_data' ) ) {
 			return;
 		}
 
@@ -331,8 +297,8 @@ class WMBF_Product_Meta {
 			return;
 		}
 
-		// Verify nonce for quick edit - WooCommerce uses '_inline_edit' nonce.
-		if ( ! isset( $_REQUEST['_inline_edit'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_inline_edit'] ) ), 'inlineeditnonce' ) ) {
+		// Verify nonce. WooCommerce adds 'woocommerce_quick_edit_nonce' to both the quick edit and bulk edit forms.
+		if ( ! isset( $_REQUEST['woocommerce_quick_edit_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['woocommerce_quick_edit_nonce'] ) ), 'woocommerce_quick_edit_nonce' ) ) {
 			return;
 		}
 
@@ -438,11 +404,26 @@ class WMBF_Product_Meta {
 
 		$status_id = $product->get_meta( '_wmbf_backorder_status', true );
 
+		// Variations without their own status use the parent product's status.
+		if ( ! $status_id && $product->is_type( 'variation' ) ) {
+			$parent = wc_get_product( $product->get_parent_id() );
+			if ( $parent ) {
+				$status_id = $parent->get_meta( '_wmbf_backorder_status', true );
+			}
+		}
+
 		if ( ! $status_id ) {
 			return null;
 		}
 
-		return WMBF_Admin_Settings::instance()->get_status( $status_id );
+		$status = WMBF_Admin_Settings::instance()->get_status( $status_id );
+
+		// Disabled statuses are not shown anywhere.
+		if ( ! $status || empty( $status['enabled'] ) ) {
+			return null;
+		}
+
+		return $status;
 	}
 
 	/**
@@ -462,7 +443,7 @@ class WMBF_Product_Meta {
 		}
 
 		// Check if variation allows backorders
-		if ( ! $variation->backorders_allowed() ) {
+		if ( ! WMBF_Frontend_Display::accepts_backorders( $variation ) ) {
 			return $variation_data;
 		}
 
@@ -475,7 +456,7 @@ class WMBF_Product_Meta {
 			'stock_quantity'     => $variation->get_stock_quantity(),
 			'managing_stock'     => $variation->managing_stock(),
 			'is_in_stock'        => $variation->is_in_stock(),
-			'backorders_allowed' => $variation->backorders_allowed(),
+			'backorders_allowed' => true,
 		);
 
 		return $variation_data;

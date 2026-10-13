@@ -365,11 +365,15 @@ class WMBF_Admin_Settings {
 	public function get_statuses() {
 		$statuses = get_option( 'wmbf_statuses', array() );
 
+		if ( ! is_array( $statuses ) ) {
+			return array();
+		}
+
 		// Sort by priority.
 		usort( $statuses, function( $a, $b ) {
 			$priority_a = isset( $a['priority'] ) ? $a['priority'] : 999;
 			$priority_b = isset( $b['priority'] ) ? $b['priority'] : 999;
-			return $priority_a - $priority_b;
+			return (int) $priority_a - (int) $priority_b;
 		});
 
 		return $statuses;
@@ -404,7 +408,10 @@ class WMBF_Admin_Settings {
 		$status_id = isset( $_POST['status_id'] ) ? sanitize_text_field( wp_unslash( $_POST['status_id'] ) ) : '';
 		$name = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
 		$description = isset( $_POST['description'] ) ? sanitize_textarea_field( wp_unslash( $_POST['description'] ) ) : '';
-		$color = isset( $_POST['color'] ) ? sanitize_hex_color( wp_unslash( $_POST['color'] ) ) : '#ff9800';
+		$color = isset( $_POST['color'] ) ? sanitize_hex_color( wp_unslash( $_POST['color'] ) ) : '';
+		if ( ! $color ) {
+			$color = '#ff9800';
+		}
 		$priority = isset( $_POST['priority'] ) ? absint( $_POST['priority'] ) : 1;
 		$enabled = isset( $_POST['enabled'] ) && 'true' === $_POST['enabled'];
 
@@ -493,13 +500,20 @@ class WMBF_Admin_Settings {
 		$ordered_statuses = array();
 
 		foreach ( $order as $priority => $status_id ) {
-			foreach ( $statuses as $status ) {
+			foreach ( $statuses as $key => $status ) {
 				if ( isset( $status['id'] ) && $status['id'] === $status_id ) {
 					$status['priority'] = $priority + 1;
 					$ordered_statuses[] = $status;
+					unset( $statuses[ $key ] );
 					break;
 				}
 			}
+		}
+
+		// Keep any statuses that were not part of the submitted order, after the ordered ones.
+		foreach ( $statuses as $status ) {
+			$status['priority'] = count( $ordered_statuses ) + 1;
+			$ordered_statuses[] = $status;
 		}
 
 		update_option( 'wmbf_statuses', $ordered_statuses );
@@ -556,11 +570,15 @@ class WMBF_Admin_Settings {
 				continue;
 			}
 
+			if ( empty( $status['name'] ) ) {
+				continue;
+			}
+
 			$sanitized_statuses[] = array(
-				'id'          => isset( $status['id'] ) ? sanitize_text_field( $status['id'] ) : uniqid(),
+				'id'          => ! empty( $status['id'] ) ? preg_replace( '/[^a-zA-Z0-9]/', '', $status['id'] ) : uniqid(),
 				'name'        => isset( $status['name'] ) ? sanitize_text_field( $status['name'] ) : '',
 				'description' => isset( $status['description'] ) ? sanitize_textarea_field( $status['description'] ) : '',
-				'color'       => isset( $status['color'] ) ? sanitize_hex_color( $status['color'] ) : '#ff9800',
+				'color'       => ( isset( $status['color'] ) && sanitize_hex_color( $status['color'] ) ) ? sanitize_hex_color( $status['color'] ) : '#ff9800',
 				'priority'    => isset( $status['priority'] ) ? absint( $status['priority'] ) : 1,
 				'enabled'     => isset( $status['enabled'] ) ? (bool) $status['enabled'] : true,
 			);

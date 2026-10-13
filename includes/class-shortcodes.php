@@ -79,9 +79,6 @@ class WMBF_Shortcodes {
 	 * @return string
 	 */
 	public function backorder_status_shortcode( $atts ) {
-		// Set flag to prevent default display when shortcode is used
-		WMBF_Frontend_Display::set_elementor_widget_rendered();
-
 		$atts = shortcode_atts(
 			array(
 				'product_id' => get_the_ID(),
@@ -97,30 +94,28 @@ class WMBF_Shortcodes {
 			return '';
 		}
 
+		// The status only applies to products that can be ordered on backorder.
+		if ( ! WMBF_Frontend_Display::accepts_backorders( $product ) ) {
+			return '';
+		}
+
 		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 		if ( ! $status ) {
 			return '';
 		}
 
-		// Add script to hide default badges when shortcode is used
-		$inline_script = "
-		(function() {
-			// Hide default single product badges when shortcode is used
-			var singleBadges = document.querySelectorAll('.wc-cbs-backorder-badge-single');
-			singleBadges.forEach(function(badge) {
-				badge.style.display = 'none';
-			});
-			var defaultBadges = document.querySelectorAll('.wc-cbs-default-badge');
-			defaultBadges.forEach(function(badge) {
-				badge.style.display = 'none';
-			});
-		})();
-		";
-
-		wp_add_inline_script( 'jquery', $inline_script );
+		// When the shortcode shows the current product's status, the default badge is not needed.
+		$is_current_product = is_product() && (int) get_queried_object_id() === (int) $product->get_id();
+		if ( $is_current_product ) {
+			WMBF_Frontend_Display::set_elementor_widget_rendered();
+		}
 
 		ob_start();
+
+		if ( $is_current_product ) {
+			WMBF_Frontend_Display::print_hide_default_badge_script();
+		}
 
 		switch ( $atts['style'] ) {
 			case 'text':
@@ -252,6 +247,7 @@ class WMBF_Shortcodes {
 
 		$args = array(
 			'post_type'      => 'product',
+			'post_status'    => 'publish',
 			'posts_per_page' => intval( $atts['limit'] ),
 			'orderby'        => $atts['orderby'],
 			'order'          => $atts['order'],
@@ -339,8 +335,7 @@ class WMBF_Shortcodes {
 				<td class="wc-cbs-item-price">
 					<?php
 					if ( $quantity > 0 && $item['total_qty'] > 0 ) {
-						$item_total = ( $item['cart_item']['line_total'] / $item['total_qty'] ) * $quantity;
-						echo wp_kses_post( wc_price( $item_total ) );
+						echo wp_kses_post( wc_price( WMBF_Cart_Grouping::get_item_price( $item ) ) );
 					}
 					?>
 				</td>
@@ -371,8 +366,7 @@ class WMBF_Shortcodes {
 				<span class="wc-cbs-item-price">
 					<?php
 					if ( $quantity > 0 && $item['total_qty'] > 0 ) {
-						$item_total = ( $item['cart_item']['line_total'] / $item['total_qty'] ) * $quantity;
-						echo wp_kses_post( wc_price( $item_total ) );
+						echo wp_kses_post( wc_price( WMBF_Cart_Grouping::get_item_price( $item ) ) );
 					}
 					?>
 				</span>
@@ -409,8 +403,7 @@ class WMBF_Shortcodes {
 					<p class="wc-cbs-item-price">
 						<?php
 						if ( $quantity > 0 && $item['total_qty'] > 0 ) {
-							$item_total = ( $item['cart_item']['line_total'] / $item['total_qty'] ) * $quantity;
-							echo wp_kses_post( wc_price( $item_total ) );
+							echo wp_kses_post( wc_price( WMBF_Cart_Grouping::get_item_price( $item ) ) );
 						}
 						?>
 					</p>

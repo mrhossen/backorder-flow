@@ -14,7 +14,7 @@
  * Requires PHP: 7.4
  * Requires Plugins: woocommerce
  * WC requires at least: 7.0
- * WC tested up to: 9.0
+ * WC tested up to: 11.2
  *
  * @package Backorder_Flow
  */
@@ -116,11 +116,6 @@ final class WMBF_Plugin {
 		require_once WMBF_INCLUDES_DIR . 'class-order-meta.php';
 		require_once WMBF_INCLUDES_DIR . 'class-shortcodes.php';
 		require_once WMBF_INCLUDES_DIR . 'class-rest-api.php';
-
-		// Elementor integration (only if Elementor is active).
-		if ( did_action( 'elementor/loaded' ) ) {
-			require_once WMBF_ELEMENTOR_DIR . 'class-elementor-integration.php';
-		}
 	}
 
 	/**
@@ -211,8 +206,10 @@ final class WMBF_Plugin {
 		WMBF_Shortcodes::instance();
 		WMBF_REST_API::instance();
 
-		// Initialize Elementor integration if available.
-		if ( did_action( 'elementor/loaded' ) && class_exists( 'WMBF_Elementor_Integration' ) ) {
+		// Initialize Elementor integration if available. This runs on plugins_loaded, after
+		// every plugin file is loaded, so it works whatever order the plugins load in.
+		if ( did_action( 'elementor/loaded' ) ) {
+			require_once WMBF_ELEMENTOR_DIR . 'class-elementor-integration.php';
 			WMBF_Elementor_Integration::instance();
 		}
 
@@ -233,6 +230,11 @@ final class WMBF_Plugin {
 			WMBF_VERSION
 		);
 
+		// The settings script is only needed on the WooCommerce settings screen.
+		if ( false === strpos( $hook, 'wc-settings' ) ) {
+			return;
+		}
+
 		// Admin scripts.
 		wp_enqueue_script(
 			'wmbf-admin',
@@ -250,17 +252,23 @@ final class WMBF_Plugin {
 				'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
 				'nonce'     => wp_create_nonce( 'wmbf_admin_nonce' ),
 				'i18n'      => array(
-					'confirmDelete' => __( 'Are you sure you want to delete this status?', 'backorder-flow' ),
-					'error'         => __( 'An error occurred. Please try again.', 'backorder-flow' ),
+					'confirmDelete'      => __( 'Are you sure you want to delete this status?', 'backorder-flow' ),
+					'confirmImport'      => __( 'This will replace all existing statuses. Are you sure?', 'backorder-flow' ),
+					'error'              => __( 'An error occurred. Please try again.', 'backorder-flow' ),
+					'saving'             => __( 'Saving...', 'backorder-flow' ),
+					'saveStatus'         => __( 'Save Status', 'backorder-flow' ),
+					'saveDefaultMessage' => __( 'Save Default Message', 'backorder-flow' ),
+					'addStatus'          => __( 'Add New Status', 'backorder-flow' ),
+					'editStatus'         => __( 'Edit Status', 'backorder-flow' ),
+					'enterName'          => __( 'Please enter a status name.', 'backorder-flow' ),
+					'orderSaved'         => __( 'Status order saved.', 'backorder-flow' ),
 				),
 			)
 		);
 
 		// Color picker.
-		if ( strpos( $hook, 'wc-settings' ) !== false ) {
-			wp_enqueue_style( 'wp-color-picker' );
-			wp_enqueue_script( 'wp-color-picker' );
-		}
+		wp_enqueue_style( 'wp-color-picker' );
+		wp_enqueue_script( 'wp-color-picker' );
 	}
 
 	/**
@@ -345,6 +353,24 @@ final class WMBF_Plugin {
 	public function deactivate() {
 		// Flush rewrite rules.
 		flush_rewrite_rules();
+	}
+
+	/**
+	 * Locate a template, allowing themes to override it.
+	 *
+	 * Themes can override a template by copying it to yourtheme/backorder-flow/{template_name}.
+	 *
+	 * @param string $template_name Template file name, e.g. 'cart-groups.php'.
+	 * @return string Absolute path to the template file.
+	 */
+	public function locate_template( $template_name ) {
+		$template = locate_template( array( 'backorder-flow/' . $template_name ) );
+
+		if ( ! $template ) {
+			$template = WMBF_TEMPLATES_DIR . $template_name;
+		}
+
+		return apply_filters( 'wmbf_locate_template', $template, $template_name );
 	}
 
 	/**

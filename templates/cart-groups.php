@@ -78,8 +78,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 								<td class="wc-cbs-item-price">
 									<?php
 									if ( $wmbf_quantity > 0 && $wmbf_item['total_qty'] > 0 ) {
-										$wmbf_item_total = ( $wmbf_item['cart_item']['line_total'] / $wmbf_item['total_qty'] ) * $wmbf_quantity;
-										echo wp_kses_post( wc_price( $wmbf_item_total ) );
+										echo wp_kses_post( wc_price( WMBF_Cart_Grouping::get_item_price( $wmbf_item ) ) );
 									}
 									?>
 								</td>
