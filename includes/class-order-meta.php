@@ -4,7 +4,7 @@
  *
  * Handles saving and displaying backorder information in orders.
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 // Exit if accessed directly.
@@ -13,21 +13,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WMCBP_Order_Meta class.
+ * WMBF_Order_Meta class.
  */
-class WMCBP_Order_Meta {
+class WMBF_Order_Meta {
 
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var WMCBP_Order_Meta
+	 * @var WMBF_Order_Meta
 	 */
 	protected static $_instance = null;
 
 	/**
 	 * Main instance.
 	 *
-	 * @return WMCBP_Order_Meta
+	 * @return WMBF_Order_Meta
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
@@ -76,22 +76,22 @@ class WMCBP_Order_Meta {
 		$quantity = $cart_item['quantity'];
 
 		// Calculate in-stock and backorder quantities.
-		$instock_qty = WMCBP_Frontend_Display::get_instock_quantity( $product, $quantity );
-		$backorder_qty = WMCBP_Frontend_Display::get_backorder_quantity( $product, $quantity );
+		$instock_qty = WMBF_Frontend_Display::get_instock_quantity( $product, $quantity );
+		$backorder_qty = WMBF_Frontend_Display::get_backorder_quantity( $product, $quantity );
 
 		// Save quantities as meta.
 		if ( $instock_qty > 0 ) {
-			$item->add_meta_data( '_wmcbp_instock_quantity', $instock_qty, true );
+			$item->add_meta_data( '_wmbf_instock_quantity', $instock_qty, true );
 		}
 
 		if ( $backorder_qty > 0 ) {
-			$item->add_meta_data( '_wmcbp_backorder_quantity', $backorder_qty, true );
+			$item->add_meta_data( '_wmbf_backorder_quantity', $backorder_qty, true );
 
 			// Save backorder status.
-			$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+			$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 			if ( $status ) {
-				$item->add_meta_data( '_wmcbp_backorder_status_id', $status['id'], true );
-				$item->add_meta_data( '_wmcbp_backorder_status_name', $status['name'], true );
+				$item->add_meta_data( '_wmbf_backorder_status_id', $status['id'], true );
+				$item->add_meta_data( '_wmbf_backorder_status_name', $status['name'], true );
 			}
 		}
 	}
@@ -110,7 +110,7 @@ class WMCBP_Order_Meta {
 
 		?>
 		<div class="wc-cbs-order-backorder-info" style="margin-top: 20px;">
-			<h3><?php esc_html_e( 'Backorder Shipping Groups', 'custom-backorder-pro' ); ?></h3>
+			<h3><?php esc_html_e( 'Backorder Shipping Groups', 'backorder-flow' ); ?></h3>
 			<?php foreach ( $groups as $group ) : ?>
 				<div class="wc-cbs-order-group" style="margin-bottom: 15px; padding: 10px; border-left: 4px solid <?php echo esc_attr( $group['color'] ); ?>; background: #f9f9f9;">
 					<h4 style="margin: 0 0 10px; color: <?php echo esc_attr( $group['color'] ); ?>;">
@@ -142,15 +142,15 @@ class WMCBP_Order_Meta {
 			return;
 		}
 
-		$template_path = WMCBP_TEMPLATES_DIR . 'order-details-backorder.php';
+		$template_path = WMBF_TEMPLATES_DIR . 'order-details-backorder.php';
 
 		if ( file_exists( $template_path ) ) {
 			include $template_path;
 		} else {
 			?>
 			<section class="wc-cbs-order-backorder-groups">
-				<h2><?php esc_html_e( 'Shipping Information', 'custom-backorder-pro' ); ?></h2>
-				<p><?php esc_html_e( 'Your order contains items that will ship at different times:', 'custom-backorder-pro' ); ?></p>
+				<h2><?php esc_html_e( 'Shipping Information', 'backorder-flow' ); ?></h2>
+				<p><?php esc_html_e( 'Your order contains items that will ship at different times:', 'backorder-flow' ); ?></p>
 
 				<?php foreach ( $groups as $group ) : ?>
 					<div class="wc-cbs-order-group" style="margin-bottom: 20px; padding: 15px; border-left: 4px solid <?php echo esc_attr( $group['color'] ); ?>; background: #f9f9f9;">
@@ -183,7 +183,7 @@ class WMCBP_Order_Meta {
 		foreach ( $columns as $key => $column ) {
 			$new_columns[ $key ] = $column;
 			if ( 'order_status' === $key ) {
-				$new_columns['backorder_status'] = __( 'Backorder', 'custom-backorder-pro' );
+				$new_columns['backorder_status'] = __( 'Backorder', 'backorder-flow' );
 			}
 		}
 
@@ -228,7 +228,7 @@ class WMCBP_Order_Meta {
 
 		$has_backorder = false;
 		foreach ( $order->get_items() as $item ) {
-			$backorder_qty = $item->get_meta( '_wmcbp_backorder_quantity', true );
+			$backorder_qty = $item->get_meta( '_wmbf_backorder_quantity', true );
 			if ( $backorder_qty ) {
 				$has_backorder = true;
 				break;
@@ -236,7 +236,7 @@ class WMCBP_Order_Meta {
 		}
 
 		if ( $has_backorder ) {
-			echo '<span class="dashicons dashicons-clock" style="color: #ff9800;" title="' . esc_attr__( 'Contains backorder items', 'custom-backorder-pro' ) . '"></span>';
+			echo '<span class="dashicons dashicons-clock" style="color: #ff9800;" title="' . esc_attr__( 'Contains backorder items', 'backorder-flow' ) . '"></span>';
 		} else {
 			echo '—';
 		}
@@ -250,12 +250,12 @@ class WMCBP_Order_Meta {
 	 */
 	private function get_order_groups( $order ) {
 		$groups = array();
-		$statuses = WMCBP_Admin_Settings::instance()->get_statuses();
+		$statuses = WMBF_Admin_Settings::instance()->get_statuses();
 
 		// Create "Ships Now" group.
 		$groups['ships_now'] = array(
 			'id'    => 'ships_now',
-			'name'  => __( 'Ships Now', 'custom-backorder-pro' ),
+			'name'  => __( 'Ships Now', 'backorder-flow' ),
 			'color' => '#4caf50',
 			'items' => array(),
 		);
@@ -281,8 +281,8 @@ class WMCBP_Order_Meta {
 			}
 
 			$quantity = $item->get_quantity();
-			$backorder_qty = $item->get_meta( '_wmcbp_backorder_quantity', true );
-			$instock_qty = $item->get_meta( '_wmcbp_instock_quantity', true );
+			$backorder_qty = $item->get_meta( '_wmbf_backorder_quantity', true );
+			$instock_qty = $item->get_meta( '_wmbf_instock_quantity', true );
 
 			// If no meta saved, assume all in stock.
 			if ( ! $backorder_qty && ! $instock_qty ) {
@@ -305,7 +305,7 @@ class WMCBP_Order_Meta {
 
 			// Add to backorder group.
 			if ( $backorder_qty > 0 ) {
-				$backorder_status_id = $item->get_meta( '_wmcbp_backorder_status_id', true );
+				$backorder_status_id = $item->get_meta( '_wmbf_backorder_status_id', true );
 
 				if ( $backorder_status_id && isset( $groups[ $backorder_status_id ] ) ) {
 					$groups[ $backorder_status_id ]['items'][] = array(

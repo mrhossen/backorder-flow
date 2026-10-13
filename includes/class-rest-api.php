@@ -4,7 +4,7 @@
  *
  * Provides REST API endpoints for backorder functionality.
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 // Exit if accessed directly.
@@ -13,14 +13,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WMCBP_REST_API class.
+ * WMBF_REST_API class.
  */
-class WMCBP_REST_API {
+class WMBF_REST_API {
 
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var WMCBP_REST_API
+	 * @var WMBF_REST_API
 	 */
 	protected static $_instance = null;
 
@@ -29,12 +29,12 @@ class WMCBP_REST_API {
 	 *
 	 * @var string
 	 */
-	private $namespace = 'wmcbp/v1';
+	private $namespace = 'wmbf/v1';
 
 	/**
 	 * Main instance.
 	 *
-	 * @return WMCBP_REST_API
+	 * @return WMBF_REST_API
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
@@ -162,7 +162,7 @@ class WMCBP_REST_API {
 	 * @return WP_REST_Response
 	 */
 	public function get_statuses( $request ) {
-		$statuses = WMCBP_Admin_Settings::instance()->get_statuses();
+		$statuses = WMBF_Admin_Settings::instance()->get_statuses();
 
 		return rest_ensure_response( array(
 			'success' => true,
@@ -178,12 +178,12 @@ class WMCBP_REST_API {
 	 */
 	public function get_status( $request ) {
 		$status_id = $request->get_param( 'id' );
-		$status = WMCBP_Admin_Settings::instance()->get_status( $status_id );
+		$status = WMBF_Admin_Settings::instance()->get_status( $status_id );
 
 		if ( ! $status ) {
 			return rest_ensure_response( array(
 				'success' => false,
-				'message' => __( 'Status not found.', 'custom-backorder-pro' ),
+				'message' => __( 'Status not found.', 'backorder-flow' ),
 			) );
 		}
 
@@ -206,11 +206,11 @@ class WMCBP_REST_API {
 		if ( ! $product ) {
 			return rest_ensure_response( array(
 				'success' => false,
-				'message' => __( 'Product not found.', 'custom-backorder-pro' ),
+				'message' => __( 'Product not found.', 'backorder-flow' ),
 			) );
 		}
 
-		$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 		return rest_ensure_response( array(
 			'success' => true,
@@ -228,11 +228,11 @@ class WMCBP_REST_API {
 		if ( ! WC()->cart ) {
 			return rest_ensure_response( array(
 				'success' => false,
-				'message' => __( 'Cart not initialized.', 'custom-backorder-pro' ),
+				'message' => __( 'Cart not initialized.', 'backorder-flow' ),
 			) );
 		}
 
-		$groups = WMCBP_Cart_Grouping::get_groups();
+		$groups = WMBF_Cart_Grouping::get_groups();
 
 		// Simplify data for API response.
 		$simplified_groups = array();
@@ -282,7 +282,7 @@ class WMCBP_REST_API {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required to filter products by backorder status via REST API.
 			'meta_query'     => array(
 				array(
-					'key'   => '_wmcbp_backorder_status',
+					'key'   => '_wmbf_backorder_status',
 					'value' => $status_id,
 				),
 			),

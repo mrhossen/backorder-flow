@@ -4,7 +4,7 @@
  *
  * Handles product-level backorder status settings.
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 // Exit if accessed directly.
@@ -13,21 +13,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WMCBP_Product_Meta class.
+ * WMBF_Product_Meta class.
  */
-class WMCBP_Product_Meta {
+class WMBF_Product_Meta {
 
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var WMCBP_Product_Meta
+	 * @var WMBF_Product_Meta
 	 */
 	protected static $_instance = null;
 
 	/**
 	 * Main instance.
 	 *
-	 * @return WMCBP_Product_Meta
+	 * @return WMBF_Product_Meta
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
@@ -182,7 +182,7 @@ class WMCBP_Product_Meta {
 	 * @return array
 	 */
 	private function get_statuses() {
-		return WMCBP_Admin_Settings::instance()->get_statuses();
+		return WMBF_Admin_Settings::instance()->get_statuses();
 	}
 
 	/**
@@ -192,7 +192,7 @@ class WMCBP_Product_Meta {
 		global $post;
 
 		$statuses = $this->get_statuses();
-		$options = array( '' => __( 'Default backorder message', 'custom-backorder-pro' ) );
+		$options = array( '' => __( 'Default backorder message', 'backorder-flow' ) );
 
 		foreach ( $statuses as $status ) {
 			if ( isset( $status['enabled'] ) && $status['enabled'] ) {
@@ -204,12 +204,12 @@ class WMCBP_Product_Meta {
 
 		woocommerce_wp_select(
 			array(
-				'id'          => '_wmcbp_backorder_status',
-				'label'       => __( 'Backorder Status', 'custom-backorder-pro' ),
-				'description' => __( 'Select a custom backorder status for this product. Only displayed when product is on backorder.', 'custom-backorder-pro' ),
+				'id'          => '_wmbf_backorder_status',
+				'label'       => __( 'Backorder Status', 'backorder-flow' ),
+				'description' => __( 'Select a custom backorder status for this product. Only displayed when product is on backorder.', 'backorder-flow' ),
 				'desc_tip'    => true,
 				'options'     => $options,
-				'value'       => get_post_meta( $post->ID, '_wmcbp_backorder_status', true ),
+				'value'       => get_post_meta( $post->ID, '_wmbf_backorder_status', true ),
 			)
 		);
 
@@ -232,9 +232,9 @@ class WMCBP_Product_Meta {
 			return;
 		}
 
-		if ( isset( $_POST['_wmcbp_backorder_status'] ) ) {
-			$status = sanitize_text_field( wp_unslash( $_POST['_wmcbp_backorder_status'] ) );
-			update_post_meta( $post_id, '_wmcbp_backorder_status', $status );
+		if ( isset( $_POST['_wmbf_backorder_status'] ) ) {
+			$status = sanitize_text_field( wp_unslash( $_POST['_wmbf_backorder_status'] ) );
+			update_post_meta( $post_id, '_wmbf_backorder_status', $status );
 		}
 	}
 
@@ -247,7 +247,7 @@ class WMCBP_Product_Meta {
 	 */
 	public function add_variation_backorder_status_field( $loop, $variation_data, $variation ) {
 		$statuses = $this->get_statuses();
-		$options = array( '' => __( 'Default backorder message', 'custom-backorder-pro' ) );
+		$options = array( '' => __( 'Default backorder message', 'backorder-flow' ) );
 
 		foreach ( $statuses as $status ) {
 			if ( isset( $status['enabled'] ) && $status['enabled'] ) {
@@ -255,11 +255,11 @@ class WMCBP_Product_Meta {
 			}
 		}
 
-		$current_value = get_post_meta( $variation->ID, '_wmcbp_backorder_status', true );
+		$current_value = get_post_meta( $variation->ID, '_wmbf_backorder_status', true );
 		?>
 		<p class="form-row form-row-full">
-			<label><?php esc_html_e( 'Backorder Status', 'custom-backorder-pro' ); ?></label>
-			<select name="_wmcbp_backorder_status[<?php echo esc_attr( $loop ); ?>]" class="wc-cbs-variation-backorder-status">
+			<label><?php esc_html_e( 'Backorder Status', 'backorder-flow' ); ?></label>
+			<select name="_wmbf_backorder_status[<?php echo esc_attr( $loop ); ?>]" class="wc-cbs-variation-backorder-status">
 				<?php foreach ( $options as $key => $label ) : ?>
 					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $current_value, $key ); ?>>
 						<?php echo esc_html( $label ); ?>
@@ -287,9 +287,9 @@ class WMCBP_Product_Meta {
 			return;
 		}
 
-		if ( isset( $_POST['_wmcbp_backorder_status'][ $i ] ) ) {
-			$status = sanitize_text_field( wp_unslash( $_POST['_wmcbp_backorder_status'][ $i ] ) );
-			update_post_meta( $variation_id, '_wmcbp_backorder_status', $status );
+		if ( isset( $_POST['_wmbf_backorder_status'][ $i ] ) ) {
+			$status = sanitize_text_field( wp_unslash( $_POST['_wmbf_backorder_status'][ $i ] ) );
+			update_post_meta( $variation_id, '_wmbf_backorder_status', $status );
 		}
 	}
 
@@ -301,11 +301,11 @@ class WMCBP_Product_Meta {
 		?>
 		<div class="inline-edit-group">
 			<label class="alignleft">
-				<span class="title"><?php esc_html_e( 'Backorder Status', 'custom-backorder-pro' ); ?></span>
+				<span class="title"><?php esc_html_e( 'Backorder Status', 'backorder-flow' ); ?></span>
 				<span class="input-text-wrap">
-					<select name="_wmcbp_backorder_status" class="wc-cbs-quick-edit-backorder-status">
-						<option value=""><?php esc_html_e( '— No Change —', 'custom-backorder-pro' ); ?></option>
-						<option value="_default"><?php esc_html_e( 'Default backorder message', 'custom-backorder-pro' ); ?></option>
+					<select name="_wmbf_backorder_status" class="wc-cbs-quick-edit-backorder-status">
+						<option value=""><?php esc_html_e( '— No Change —', 'backorder-flow' ); ?></option>
+						<option value="_default"><?php esc_html_e( 'Default backorder message', 'backorder-flow' ); ?></option>
 						<?php foreach ( $statuses as $status ) : ?>
 							<?php if ( isset( $status['enabled'] ) && $status['enabled'] ) : ?>
 								<option value="<?php echo esc_attr( $status['id'] ); ?>">
@@ -336,12 +336,12 @@ class WMCBP_Product_Meta {
 			return;
 		}
 
-		if ( isset( $_REQUEST['_wmcbp_backorder_status'] ) && '' !== $_REQUEST['_wmcbp_backorder_status'] ) {
-			$status = sanitize_text_field( wp_unslash( $_REQUEST['_wmcbp_backorder_status'] ) );
+		if ( isset( $_REQUEST['_wmbf_backorder_status'] ) && '' !== $_REQUEST['_wmbf_backorder_status'] ) {
+			$status = sanitize_text_field( wp_unslash( $_REQUEST['_wmbf_backorder_status'] ) );
 			if ( '_default' === $status ) {
-				delete_post_meta( $product->get_id(), '_wmcbp_backorder_status' );
+				delete_post_meta( $product->get_id(), '_wmbf_backorder_status' );
 			} else {
-				update_post_meta( $product->get_id(), '_wmcbp_backorder_status', $status );
+				update_post_meta( $product->get_id(), '_wmbf_backorder_status', $status );
 			}
 		}
 	}
@@ -354,11 +354,11 @@ class WMCBP_Product_Meta {
 		?>
 		<div class="inline-edit-group">
 			<label class="alignleft">
-				<span class="title"><?php esc_html_e( 'Backorder Status', 'custom-backorder-pro' ); ?></span>
+				<span class="title"><?php esc_html_e( 'Backorder Status', 'backorder-flow' ); ?></span>
 				<span class="input-text-wrap">
-					<select name="_wmcbp_backorder_status" class="wc-cbs-bulk-edit-backorder-status">
-						<option value=""><?php esc_html_e( '— No Change —', 'custom-backorder-pro' ); ?></option>
-						<option value="_default"><?php esc_html_e( 'Default backorder message', 'custom-backorder-pro' ); ?></option>
+					<select name="_wmbf_backorder_status" class="wc-cbs-bulk-edit-backorder-status">
+						<option value=""><?php esc_html_e( '— No Change —', 'backorder-flow' ); ?></option>
+						<option value="_default"><?php esc_html_e( 'Default backorder message', 'backorder-flow' ); ?></option>
 						<?php foreach ( $statuses as $status ) : ?>
 							<?php if ( isset( $status['enabled'] ) && $status['enabled'] ) : ?>
 								<option value="<?php echo esc_attr( $status['id'] ); ?>">
@@ -393,7 +393,7 @@ class WMCBP_Product_Meta {
 		foreach ( $columns as $key => $column ) {
 			$new_columns[ $key ] = $column;
 			if ( 'is_in_stock' === $key ) {
-				$new_columns['backorder_status'] = __( 'Backorder Status', 'custom-backorder-pro' );
+				$new_columns['backorder_status'] = __( 'Backorder Status', 'backorder-flow' );
 			}
 		}
 		return $new_columns;
@@ -407,9 +407,9 @@ class WMCBP_Product_Meta {
 	 */
 	public function display_admin_column( $column, $post_id ) {
 		if ( 'backorder_status' === $column ) {
-			$status_id = get_post_meta( $post_id, '_wmcbp_backorder_status', true );
+			$status_id = get_post_meta( $post_id, '_wmbf_backorder_status', true );
 			if ( $status_id ) {
-				$status = WMCBP_Admin_Settings::instance()->get_status( $status_id );
+				$status = WMBF_Admin_Settings::instance()->get_status( $status_id );
 				if ( $status ) {
 					echo '<span style="color: ' . esc_attr( $status['color'] ) . ';">' . esc_html( $status['name'] ) . '</span>';
 				} else {
@@ -436,13 +436,13 @@ class WMCBP_Product_Meta {
 			return null;
 		}
 
-		$status_id = $product->get_meta( '_wmcbp_backorder_status', true );
+		$status_id = $product->get_meta( '_wmbf_backorder_status', true );
 
 		if ( ! $status_id ) {
 			return null;
 		}
 
-		return WMCBP_Admin_Settings::instance()->get_status( $status_id );
+		return WMBF_Admin_Settings::instance()->get_status( $status_id );
 	}
 
 	/**
@@ -468,7 +468,7 @@ class WMCBP_Product_Meta {
 
 		// Add backorder status data with stock information.
 		// JavaScript will use this to determine when to show the message.
-		$variation_data['wmcbp_backorder_status'] = array(
+		$variation_data['wmbf_backorder_status'] = array(
 			'name'               => $status['name'],
 			'description'        => isset( $status['description'] ) ? $status['description'] : '',
 			'color'              => isset( $status['color'] ) ? $status['color'] : '#ff9800',
