@@ -319,6 +319,7 @@ class WMBF_Widget_Backorder_Products extends Widget_Base {
 
 		$args = array(
 			'post_type'      => 'product',
+			'post_status'    => 'publish',
 			'posts_per_page' => $settings['posts_per_page'],
 			'orderby'        => $settings['orderby'],
 			'order'          => $settings['order'],

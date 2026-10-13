@@ -308,30 +308,6 @@ class WMBF_Widget_Backorder_Badge extends Widget_Base {
 	 * Render widget output.
 	 */
 	protected function render() {
-		// Set flag to prevent default display
-		WMBF_Frontend_Display::set_elementor_widget_rendered();
-
-		// Ensure jQuery is enqueued.
-		wp_enqueue_script( 'jquery' );
-
-		// Hide any default badges that may have already rendered
-		$inline_script = "
-		(function() {
-			// Hide default single product badges when Elementor widget is used
-			var singleBadges = document.querySelectorAll('.wc-cbs-backorder-badge-single');
-			singleBadges.forEach(function(badge) {
-				badge.style.display = 'none';
-			});
-			// Also hide generic default badges
-			var defaultBadges = document.querySelectorAll('.wc-cbs-default-badge');
-			defaultBadges.forEach(function(badge) {
-				badge.style.display = 'none';
-			});
-		})();
-		";
-
-		wp_add_inline_script( 'jquery', $inline_script );
-
 		$settings = $this->get_settings_for_display();
 
 		// Get product ID.
@@ -345,14 +321,20 @@ class WMBF_Widget_Backorder_Badge extends Widget_Base {
 			return;
 		}
 
-		// Get backorder status.
-		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
+		// Get backorder status. It only applies to products that can be ordered on backorder.
+		$status = WMBF_Frontend_Display::accepts_backorders( $product ) ? WMBF_Product_Meta::get_product_backorder_status( $product ) : null;
 
 		if ( ! $status ) {
 			if ( \Elementor\Plugin::$instance->editor->is_edit_mode() ) {
 				echo '<p>' . esc_html__( 'No backorder status set for this product.', 'backorder-flow' ) . '</p>';
 			}
 			return;
+		}
+
+		// When the badge shows the current product's status, the default badge is not needed.
+		if ( is_product() && (int) get_queried_object_id() === (int) $product->get_id() ) {
+			WMBF_Frontend_Display::set_elementor_widget_rendered();
+			WMBF_Frontend_Display::print_hide_default_badge_script();
 		}
 
 		$badge_classes = array(

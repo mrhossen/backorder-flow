@@ -84,6 +84,10 @@ class WMBF_Backorder_Status_Tag extends Tag {
 			return;
 		}
 
+		if ( ! WMBF_Frontend_Display::accepts_backorders( $wmbf_product ) ) {
+			return;
+		}
+
 		$status = WMBF_Product_Meta::get_product_backorder_status( $wmbf_product );
 
 		if ( ! $status ) {

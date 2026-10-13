@@ -181,10 +181,13 @@ class WMBF_REST_API {
 		$status = WMBF_Admin_Settings::instance()->get_status( $status_id );
 
 		if ( ! $status ) {
-			return rest_ensure_response( array(
-				'success' => false,
-				'message' => __( 'Status not found.', 'backorder-flow' ),
-			) );
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => __( 'Status not found.', 'backorder-flow' ),
+				),
+				404
+			);
 		}
 
 		return rest_ensure_response( array(
@@ -203,18 +206,24 @@ class WMBF_REST_API {
 		$product_id = $request->get_param( 'id' );
 		$product = wc_get_product( $product_id );
 
-		if ( ! $product ) {
-			return rest_ensure_response( array(
-				'success' => false,
-				'message' => __( 'Product not found.', 'backorder-flow' ),
-			) );
+		if ( ! $product || 'publish' !== get_post_status( $product->get_parent_id() ? $product->get_parent_id() : $product->get_id() ) ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => __( 'Product not found.', 'backorder-flow' ),
+				),
+				404
+			);
 		}
 
 		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 		return rest_ensure_response( array(
-			'success' => true,
-			'data'    => $status,
+			'success'            => true,
+			'data'               => $status,
+			'accepts_backorders' => WMBF_Frontend_Display::accepts_backorders( $product ),
+			'on_backorder'       => WMBF_Frontend_Display::is_currently_on_backorder( $product ),
+			'stock_quantity'     => $product->get_stock_quantity(),
 		) );
 	}
 
@@ -225,6 +234,8 @@ class WMBF_REST_API {
 	 * @return WP_REST_Response
 	 */
 	public function get_cart_groups( $request ) {
+		WMBF_Cart_Grouping::maybe_load_cart();
+
 		if ( ! WC()->cart ) {
 			return rest_ensure_response( array(
 				'success' => false,
@@ -272,11 +283,12 @@ class WMBF_REST_API {
 	 */
 	public function get_products_by_status( $request ) {
 		$status_id = $request->get_param( 'status_id' );
-		$per_page = $request->get_param( 'per_page' );
-		$page = $request->get_param( 'page' );
+		$per_page = min( 100, absint( $request->get_param( 'per_page' ) ) );
+		$page = absint( $request->get_param( 'page' ) );
 
 		$args = array(
 			'post_type'      => 'product',
+			'post_status'    => 'publish',
 			'posts_per_page' => $per_page,
 			'paged'          => $page,
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required to filter products by backorder status via REST API.

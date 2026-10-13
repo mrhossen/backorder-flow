@@ -25,6 +25,13 @@ class WMBF_Frontend_Display {
 	protected static $_instance = null;
 
 	/**
+	 * Whether a shortcode or Elementor widget already rendered the status on this page.
+	 *
+	 * @var bool
+	 */
+	protected static $widget_rendered = false;
+
+	/**
 	 * Main instance.
 	 *
 	 * @return WMBF_Frontend_Display
@@ -85,7 +92,7 @@ class WMBF_Frontend_Display {
 		}
 
 		// For shop pages, only show if product is actually on backorder (stock is 0 or less)
-		if ( ! $product->backorders_allowed() ) {
+		if ( ! self::accepts_backorders( $product ) ) {
 			return;
 		}
 
@@ -235,16 +242,90 @@ class WMBF_Frontend_Display {
 	 * @return bool
 	 */
 	public static function elementor_widget_rendered() {
-		static $rendered = false;
-		return $rendered;
+		return self::$widget_rendered;
 	}
 
 	/**
 	 * Mark that Elementor widget has been rendered.
 	 */
 	public static function set_elementor_widget_rendered() {
-		static $rendered;
-		$rendered = true;
+		self::$widget_rendered = true;
+	}
+
+	/**
+	 * Print a script that hides the default single product badge.
+	 *
+	 * Used by the shortcode and Elementor widgets, which can render after the default badge.
+	 */
+	public static function print_hide_default_badge_script() {
+		static $printed = false;
+		if ( $printed ) {
+			return;
+		}
+		$printed = true;
+		?>
+		<script type="text/javascript">
+		(function() {
+			function wmbfHideDefaultBadges() {
+				document.querySelectorAll( '.wc-cbs-default-badge' ).forEach( function( badge ) {
+					badge.classList.add( 'wc-cbs-hidden-by-widget' );
+					badge.style.setProperty( 'display', 'none', 'important' );
+				} );
+			}
+			wmbfHideDefaultBadges();
+			document.addEventListener( 'DOMContentLoaded', wmbfHideDefaultBadges );
+		})();
+		</script>
+		<?php
+	}
+
+	/**
+	 * Check if a product is currently on backorder (out of stock with backorders allowed).
+	 *
+	 * @param WC_Product $product Product object.
+	 * @return bool
+	 */
+	public static function is_currently_on_backorder( $product ) {
+		if ( ! self::accepts_backorders( $product ) ) {
+			return false;
+		}
+
+		if ( $product->managing_stock() ) {
+			$stock_quantity = $product->get_stock_quantity();
+			return null !== $stock_quantity && $stock_quantity <= 0;
+		}
+
+		return $product->is_on_backorder();
+	}
+
+	/**
+	 * Check if a product can be ordered on backorder.
+	 *
+	 * Covers products that manage stock with backorders allowed, and products that do not
+	 * manage stock but have their stock status set to "On backorder".
+	 *
+	 * @param WC_Product $product Product object.
+	 * @return bool
+	 */
+	public static function accepts_backorders( $product ) {
+		if ( ! $product ) {
+			return false;
+		}
+
+		if ( $product->backorders_allowed() ) {
+			return true;
+		}
+
+		return ! $product->managing_stock() && 'onbackorder' === $product->get_stock_status();
+	}
+
+	/**
+	 * Get the default backorder message.
+	 *
+	 * @return string
+	 */
+	public static function get_default_message() {
+		return (string) get_option( 'wmbf_default_message', __( 'This item is currently on backorder.', 'backorder-flow' ) );
 	}
 
 	/**
@@ -307,17 +388,19 @@ class WMBF_Frontend_Display {
 	 * @return string
 	 */
 	public function filter_availability_text( $availability, $product ) {
-		if ( ! $product ) {
+		if ( ! $product || ! self::is_currently_on_backorder( $product ) ) {
 			return $availability;
 		}
 
-		// Check if this product has a custom backorder status
-		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
-
-		// If it has a custom status and we're showing it, hide the default WooCommerce message
-		if ( $status && $this->should_display_backorder_status( $product ) ) {
-			// Return empty string to suppress default WooCommerce availability text
+		// Products with a custom status show the status badge instead of the default text.
+		if ( $this->should_display_backorder_status( $product ) ) {
 			return '';
+		}
+
+		// Products without a custom status show the default backorder message.
+		$default_message = self::get_default_message();
+		if ( '' !== $default_message ) {
+			return $default_message;
 		}
 
 		return $availability;
@@ -335,11 +418,8 @@ class WMBF_Frontend_Display {
 			return $availability;
 		}
 
-		// Check if this product has a custom backorder status
-		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
-
-		// If it has a custom status and we're showing it, suppress the default HTML
-		if ( $status && $this->should_display_backorder_status( $product ) ) {
+		// If the product is on backorder and shows a custom status, suppress the default HTML.
+		if ( self::is_currently_on_backorder( $product ) && $this->should_display_backorder_status( $product ) ) {
 			// Return empty availability to suppress default display
 			return array(
 				'availability' => '',
@@ -367,16 +447,9 @@ class WMBF_Frontend_Display {
 			return false;
 		}
 
-		// Check if product allows backorders.
-		if ( ! $product->backorders_allowed() ) {
-			return false;
-		}
-
-		// Show the backorder status if:
-		// 1. Product is out of stock, OR
-		// 2. Product allows backorders (even if currently in stock)
-		// This allows customers to know about backorder policies upfront
-		return true;
+		// The status only applies to products that can be ordered on backorder.
+		// Whether it is currently visible depends on stock vs. selected quantity (handled in JS).
+		return self::accepts_backorders( $product );
 	}
 
 	/**
@@ -386,7 +459,7 @@ class WMBF_Frontend_Display {
 	 * @param string $context Display context (shop, single, cart, checkout).
 	 */
 	private function render_backorder_badge( $status, $context = 'single' ) {
-		$template_path = WMBF_TEMPLATES_DIR . 'single-product-status.php';
+		$template_path = WMBF()->locate_template( 'single-product-status.php' );
 
 		if ( file_exists( $template_path ) ) {
 			include $template_path;
@@ -441,7 +514,7 @@ class WMBF_Frontend_Display {
 			return false;
 		}
 
-		if ( ! $product->backorders_allowed() ) {
+		if ( ! self::accepts_backorders( $product ) ) {
 			return false;
 		}
 
@@ -452,12 +525,8 @@ class WMBF_Frontend_Display {
 			return $quantity > $stock_quantity;
 		}
 
-		// If not in stock.
-		if ( ! $product->is_in_stock() ) {
-			return true;
-		}
-
-		return false;
+		// Not managing stock: the stock status decides.
+		return 'onbackorder' === $product->get_stock_status();
 	}
 
 	/**
@@ -473,7 +542,7 @@ class WMBF_Frontend_Display {
 		}
 
 		if ( ! $product->managing_stock() ) {
-			return $product->is_in_stock() ? 0 : $quantity;
+			return 'onbackorder' === $product->get_stock_status() ? $quantity : 0;
 		}
 
 		$stock_quantity = $product->get_stock_quantity();
@@ -502,7 +571,7 @@ class WMBF_Frontend_Display {
 		}
 
 		if ( ! $product->managing_stock() ) {
-			return $product->is_in_stock() ? $quantity : 0;
+			return 'onbackorder' === $product->get_stock_status() ? 0 : $quantity;
 		}
 
 		$stock_quantity = $product->get_stock_quantity();
@@ -541,6 +610,33 @@ class WMBF_Frontend_Display {
 			var stockQuantity = <?php echo wp_json_encode( $script_data['stockQuantity'] ); ?>;
 			var managingStock = <?php echo wp_json_encode( $script_data['managingStock'] ); ?>;
 
+			function renderBadge(placeholder, status, color) {
+				var icon = document.createElement('span');
+				icon.className = 'wc-cbs-backorder-badge-icon';
+				icon.style.backgroundColor = color;
+
+				var content = document.createElement('div');
+				content.className = 'wc-cbs-backorder-badge-content';
+
+				var title = document.createElement('strong');
+				title.className = 'wc-cbs-backorder-badge-title';
+				title.textContent = status.name;
+				content.appendChild(title);
+
+				if (status.description) {
+					var description = document.createElement('span');
+					description.className = 'wc-cbs-backorder-badge-description';
+					description.textContent = status.description;
+					content.appendChild(description);
+				}
+
+				placeholder.textContent = '';
+				placeholder.appendChild(icon);
+				placeholder.appendChild(content);
+				placeholder.style.borderColor = color;
+				placeholder.style.display = placeholder.classList.contains('wc-cbs-hidden-by-widget') ? 'none' : 'inline-flex';
+			}
+
 			function shouldShowBackorderMessage(quantity) {
 				// Always show if not managing stock but backorders allowed (means it's on backorder)
 				if (!managingStock) {
@@ -566,17 +662,7 @@ class WMBF_Frontend_Display {
 				if (shouldShowBackorderMessage(quantity)) {
 					var color = backorderStatus.color || '#ff9800';
 
-					var html = '<span class="wc-cbs-backorder-badge-icon" style="background-color: ' + color + ';"></span>';
-					html += '<div class="wc-cbs-backorder-badge-content">';
-					html += '<strong class="wc-cbs-backorder-badge-title">' + backorderStatus.name + '</strong>';
-					if (backorderStatus.description) {
-						html += '<span class="wc-cbs-backorder-badge-description">' + backorderStatus.description + '</span>';
-					}
-					html += '</div>';
-
-					placeholder.innerHTML = html;
-					placeholder.style.borderColor = color;
-					placeholder.style.display = 'inline-flex';
+					renderBadge(placeholder, backorderStatus, color);
 				} else {
 					placeholder.style.display = 'none';
 				}
@@ -622,6 +708,33 @@ class WMBF_Frontend_Display {
 		(function() {
 			var currentVariation = null;
 
+			function renderBadge(placeholder, status, color) {
+				var icon = document.createElement('span');
+				icon.className = 'wc-cbs-backorder-badge-icon';
+				icon.style.backgroundColor = color;
+
+				var content = document.createElement('div');
+				content.className = 'wc-cbs-backorder-badge-content';
+
+				var title = document.createElement('strong');
+				title.className = 'wc-cbs-backorder-badge-title';
+				title.textContent = status.name;
+				content.appendChild(title);
+
+				if (status.description) {
+					var description = document.createElement('span');
+					description.className = 'wc-cbs-backorder-badge-description';
+					description.textContent = status.description;
+					content.appendChild(description);
+				}
+
+				placeholder.textContent = '';
+				placeholder.appendChild(icon);
+				placeholder.appendChild(content);
+				placeholder.style.borderColor = color;
+				placeholder.style.display = placeholder.classList.contains('wc-cbs-hidden-by-widget') ? 'none' : 'inline-flex';
+			}
+
 			function shouldShowBackorderMessage(variation, quantity) {
 				if (!variation || !variation.wmbf_backorder_status) {
 					return false;
@@ -660,17 +773,7 @@ class WMBF_Frontend_Display {
 					var status = currentVariation.wmbf_backorder_status;
 					var color = status.color || '#ff9800';
 
-					var html = '<span class="wc-cbs-backorder-badge-icon" style="background-color: ' + color + ';"></span>';
-					html += '<div class="wc-cbs-backorder-badge-content">';
-					html += '<strong class="wc-cbs-backorder-badge-title">' + status.name + '</strong>';
-					if (status.description) {
-						html += '<span class="wc-cbs-backorder-badge-description">' + status.description + '</span>';
-					}
-					html += '</div>';
-
-					placeholder.innerHTML = html;
-					placeholder.style.borderColor = color;
-					placeholder.style.display = 'inline-flex';
+					renderBadge(placeholder, status, color);
 				} else {
 					placeholder.style.display = 'none';
 				}

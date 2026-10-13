@@ -54,8 +54,8 @@ class WMBF_Cart_Grouping {
 	 * Constructor.
 	 */
 	public function __construct() {
-		// Display grouped cart on cart page - after cart contents.
-		add_action( 'woocommerce_after_cart_contents', array( $this, 'display_cart_groups' ), 10 );
+		// Display grouped cart on cart page - after the cart table, inside the cart form so it refreshes with the cart.
+		add_action( 'woocommerce_after_cart_table', array( $this, 'display_cart_groups' ), 10 );
 
 		// Display grouped cart on checkout page - before payment.
 		add_action( 'woocommerce_review_order_before_payment', array( $this, 'display_checkout_groups' ), 10 );
@@ -65,9 +65,6 @@ class WMBF_Cart_Grouping {
 
 		// Register REST API endpoint for blocks integration.
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
-
-		// Extend WooCommerce Store API for cart item data.
-		add_filter( 'woocommerce_store_api_cart_item_data', array( $this, 'add_groups_to_store_api' ), 10, 2 );
 
 		// Fallback: Render groups in footer for blocks (noscript support).
 		add_action( 'wp_footer', array( $this, 'render_blocks_fallback' ), 50 );
@@ -111,38 +108,21 @@ class WMBF_Cart_Grouping {
 					'shippingGroups'      => __( 'Shipping Groups', 'backorder-flow' ),
 					'shippingDescription' => __( 'Your order contains items that will ship at different times:', 'backorder-flow' ),
 					'qty'                 => __( 'Qty:', 'backorder-flow' ),
-					/* translators: %d: total quantity of items */
-					'ofTotal'             => __( 'of %d total', 'backorder-flow' ),
+					/* translators: %1$d: quantity from this group, %2$d: total quantity */
+					'partial'             => __( '(%1$d of %2$d total)', 'backorder-flow' ),
 				),
 			)
 		);
 	}
 
 	/**
-	 * Get cart groups data formatted for blocks.
+	 * Get cart groups data formatted for blocks and the REST API.
 	 *
 	 * @return array
 	 */
-	private function get_cart_groups_for_blocks() {
+	public function get_cart_groups_for_blocks() {
 		$groups = $this->get_cart_groups();
 
-		if ( empty( $groups ) ) {
-			return array(
-				'groups'       => array(),
-				'has_backorder' => false,
-			);
-		}
-
-		// Check if has backorder items.
-		$has_backorder = false;
-		foreach ( $groups as $group ) {
-			if ( 'ships_now' !== $group['id'] && ! empty( $group['items'] ) ) {
-				$has_backorder = true;
-				break;
-			}
-		}
-
-		// Format groups for JavaScript.
 		$formatted_groups = array();
 		foreach ( $groups as $group ) {
 			$formatted_items = array();
@@ -151,17 +131,11 @@ class WMBF_Cart_Grouping {
 				$quantity  = $item['quantity'];
 				$total_qty = $item['total_qty'];
 
-				// Calculate item price.
-				$item_price = 0;
-				if ( $quantity > 0 && $total_qty > 0 && isset( $item['cart_item']['line_total'] ) ) {
-					$item_price = ( $item['cart_item']['line_total'] / $total_qty ) * $quantity;
-				}
-
 				// Get variation attributes.
 				$variation = array();
 				if ( isset( $item['cart_item']['variation'] ) && is_array( $item['cart_item']['variation'] ) ) {
 					foreach ( $item['cart_item']['variation'] as $attr_key => $attr_value ) {
-						$attr_label              = wc_attribute_label( str_replace( 'attribute_', '', $attr_key ) );
+						$attr_label               = wc_attribute_label( str_replace( 'attribute_', '', $attr_key ) );
 						$variation[ $attr_label ] = $attr_value;
 					}
 				}
@@ -172,7 +146,7 @@ class WMBF_Cart_Grouping {
 					'quantity'   => (int) $quantity,
 					'total_qty'  => (int) $total_qty,
 					'is_partial' => (bool) $item['is_partial'],
-					'price_html' => wc_price( $item_price ),
+					'price_html' => wc_price( self::get_item_price( $item ) ),
 					'variation'  => $variation,
 				);
 			}
@@ -187,9 +161,70 @@ class WMBF_Cart_Grouping {
 		}
 
 		return array(
-			'groups'       => $formatted_groups,
-			'has_backorder' => $has_backorder,
+			'groups'        => $formatted_groups,
+			'has_backorder' => self::groups_have_backorder( $groups ),
 		);
+	}
+
+	/**
+	 * Get the price of the part of a cart line that falls in a group.
+	 *
+	 * @param array $item Group item.
+	 * @return float
+	 */
+	public static function get_item_price( $item ) {
+		$quantity  = isset( $item['quantity'] ) ? (int) $item['quantity'] : 0;
+		$total_qty = isset( $item['total_qty'] ) ? (int) $item['total_qty'] : 0;
+
+		if ( $quantity <= 0 || $total_qty <= 0 || ! isset( $item['cart_item']['line_total'] ) ) {
+			return 0;
+		}
+
+		$line_total = (float) $item['cart_item']['line_total'];
+
+		// Match the cart's tax display setting.
+		if ( WC()->cart && WC()->cart->display_prices_including_tax() && isset( $item['cart_item']['line_tax'] ) ) {
+			$line_total += (float) $item['cart_item']['line_tax'];
+		}
+
+		return ( $line_total / $total_qty ) * $quantity;
+	}
+
+	/**
+	 * Check if groups contain backordered items.
+	 *
+	 * @param array $groups Cart groups.
+	 * @return bool
+	 */
+	public static function groups_have_backorder( $groups ) {
+		foreach ( $groups as $group ) {
+			if ( 'ships_now' !== $group['id'] && ! empty( $group['items'] ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Make sure the cart is loaded during REST API requests.
+	 *
+	 * WooCommerce only loads the cart for frontend requests, so REST callbacks must load it.
+	 */
+	public static function maybe_load_cart() {
+		if ( ! function_exists( 'WC' ) ) {
+			return;
+		}
+
+		if ( null === WC()->cart && function_exists( 'wc_load_cart' ) ) {
+			wc_load_cart();
+		}
+
+		if ( WC()->cart ) {
+			// Loads the cart from the session if needed, then refreshes line totals.
+			WC()->cart->get_cart();
+			WC()->cart->calculate_totals();
+		}
 	}
 
 	/**
@@ -278,76 +313,12 @@ class WMBF_Cart_Grouping {
 	 * @return WP_REST_Response
 	 */
 	public function get_cart_groups_rest() {
-		$groups = $this->get_cart_groups();
+		self::maybe_load_cart();
 
-		if ( empty( $groups ) ) {
-			return rest_ensure_response(
-				array(
-					'groups'       => array(),
-					'has_backorder' => false,
-				)
-			);
-		}
+		$response = rest_ensure_response( $this->get_cart_groups_for_blocks() );
+		$response->header( 'Cache-Control', 'no-store' );
 
-		// Check if has backorder items.
-		$has_backorder = false;
-		foreach ( $groups as $group ) {
-			if ( 'ships_now' !== $group['id'] && ! empty( $group['items'] ) ) {
-				$has_backorder = true;
-				break;
-			}
-		}
-
-		// Format groups for REST response.
-		$formatted_groups = array();
-		foreach ( $groups as $group ) {
-			$formatted_items = array();
-			foreach ( $group['items'] as $item ) {
-				$product   = $item['product'];
-				$quantity  = $item['quantity'];
-				$total_qty = $item['total_qty'];
-
-				// Calculate item price.
-				$item_price = 0;
-				if ( $quantity > 0 && $total_qty > 0 && isset( $item['cart_item']['line_total'] ) ) {
-					$item_price = ( $item['cart_item']['line_total'] / $total_qty ) * $quantity;
-				}
-
-				// Get variation attributes.
-				$variation = array();
-				if ( isset( $item['cart_item']['variation'] ) && is_array( $item['cart_item']['variation'] ) ) {
-					foreach ( $item['cart_item']['variation'] as $attr_key => $attr_value ) {
-						$attr_label              = wc_attribute_label( str_replace( 'attribute_', '', $attr_key ) );
-						$variation[ $attr_label ] = $attr_value;
-					}
-				}
-
-				$formatted_items[] = array(
-					'name'       => $product->get_name(),
-					'thumbnail'  => $product->get_image( 'thumbnail' ),
-					'quantity'   => (int) $quantity,
-					'total_qty'  => (int) $total_qty,
-					'is_partial' => (bool) $item['is_partial'],
-					'price_html' => wc_price( $item_price ),
-					'variation'  => $variation,
-				);
-			}
-
-			$formatted_groups[] = array(
-				'id'          => $group['id'],
-				'name'        => $group['name'],
-				'description' => $group['description'],
-				'color'       => $group['color'],
-				'items'       => $formatted_items,
-			);
-		}
-
-		return rest_ensure_response(
-			array(
-				'groups'       => $formatted_groups,
-				'has_backorder' => $has_backorder,
-			)
-		);
+		return $response;
 	}
 
 	/**
@@ -371,16 +342,8 @@ class WMBF_Cart_Grouping {
 			return;
 		}
 
-		// Check if should display (multiple groups or has backorder).
-		$has_backorder = false;
-		foreach ( $groups as $group ) {
-			if ( 'ships_now' !== $group['id'] && ! empty( $group['items'] ) ) {
-				$has_backorder = true;
-				break;
-			}
-		}
-
-		if ( count( $groups ) < 2 && ! $has_backorder ) {
+		// Only display when the cart contains backordered items.
+		if ( ! self::groups_have_backorder( $groups ) ) {
 			return;
 		}
 
@@ -442,8 +405,7 @@ class WMBF_Cart_Grouping {
 										<td class="wc-cbs-item-price">
 											<?php
 											if ( $wmbf_quantity > 0 && $wmbf_item['total_qty'] > 0 ) {
-												$wmbf_item_total = ( $wmbf_item['cart_item']['line_total'] / $wmbf_item['total_qty'] ) * $wmbf_quantity;
-												echo wp_kses_post( wc_price( $wmbf_item_total ) );
+												echo wp_kses_post( wc_price( self::get_item_price( $wmbf_item ) ) );
 											}
 											?>
 										</td>
@@ -524,23 +486,13 @@ class WMBF_Cart_Grouping {
 
 		$groups = $this->get_cart_groups();
 
-		if ( empty( $groups ) ) {
+		// Only display when the cart contains backordered items.
+		if ( empty( $groups ) || ! self::groups_have_backorder( $groups ) ) {
 			return;
 		}
 
-		// Close the cart table, display groups, then reopen the table.
-		?>
-		</tbody>
-		</table>
-		<?php
-
 		$this->render_cart_groups( $groups, 'cart' );
 		$this->cart_displayed = true;
-
-		?>
-		<table class="shop_table shop_table_responsive cart woocommerce-cart-form__contents" cellspacing="0">
-		<tbody>
-		<?php
 	}
 
 	/**
@@ -555,34 +507,14 @@ class WMBF_Cart_Grouping {
 
 		$groups = $this->get_cart_groups();
 
-		if ( empty( $groups ) ) {
+		// Only display when the cart contains backordered items.
+		if ( empty( $groups ) || ! self::groups_have_backorder( $groups ) ) {
 			return;
 		}
 
 		// Simply display groups (no table closing/opening needed at this hook).
 		$this->render_cart_groups( $groups, 'checkout' );
 		$this->checkout_displayed = true;
-	}
-
-	/**
-	 * Add groups data to Store API for WooCommerce Blocks.
-	 *
-	 * @param array $item_data Item data.
-	 * @param array $cart_item Cart item.
-	 * @return array
-	 */
-	public function add_groups_to_store_api( $item_data, $cart_item ) {
-		$product = $cart_item['data'];
-		if ( ! $product ) {
-			return $item_data;
-		}
-
-		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
-		if ( $status ) {
-			$item_data['backorder_status'] = $status;
-		}
-
-		return $item_data;
 	}
 
 	/**
@@ -628,6 +560,16 @@ class WMBF_Cart_Grouping {
 			}
 		}
 
+		// Group for backordered items without a custom status.
+		$groups['default_backorder'] = array(
+			'id'          => 'default_backorder',
+			'name'        => apply_filters( 'wmbf_default_backorder_label', __( 'On Backorder', 'backorder-flow' ) ),
+			'description' => apply_filters( 'wmbf_default_backorder_description', WMBF_Frontend_Display::get_default_message() ),
+			'color'       => apply_filters( 'wmbf_default_backorder_color', '#9e9e9e' ),
+			'priority'    => PHP_INT_MAX,
+			'items'       => array(),
+		);
+
 		// Process each cart item.
 		foreach ( $cart_items as $cart_item_key => $cart_item ) {
 			$product  = $cart_item['data'];
@@ -656,9 +598,10 @@ class WMBF_Cart_Grouping {
 			// Add to backorder group if there's backorder quantity.
 			if ( $backorder_qty > 0 ) {
 				$backorder_status = WMBF_Product_Meta::get_product_backorder_status( $product );
+				$group_id         = ( $backorder_status && isset( $groups[ $backorder_status['id'] ] ) ) ? $backorder_status['id'] : 'default_backorder';
 
-				if ( $backorder_status && isset( $groups[ $backorder_status['id'] ] ) ) {
-					$groups[ $backorder_status['id'] ]['items'][] = array(
+				if ( isset( $groups[ $group_id ] ) ) {
+					$groups[ $group_id ]['items'][] = array(
 						'cart_item_key' => $cart_item_key,
 						'cart_item'     => $cart_item,
 						'product'       => $product,
@@ -684,7 +627,7 @@ class WMBF_Cart_Grouping {
 			function( $a, $b ) {
 				$priority_a = isset( $a['priority'] ) ? $a['priority'] : 999;
 				$priority_b = isset( $b['priority'] ) ? $b['priority'] : 999;
-				return $priority_a - $priority_b;
+				return $priority_a <=> $priority_b;
 			}
 		);
 
@@ -698,7 +641,7 @@ class WMBF_Cart_Grouping {
 	 * @param string $context Display context (cart or checkout).
 	 */
 	private function render_cart_groups( $groups, $context = 'cart' ) {
-		$template_path = WMBF_TEMPLATES_DIR . 'cart-groups.php';
+		$template_path = WMBF()->locate_template( 'cart-groups.php' );
 
 		if ( file_exists( $template_path ) ) {
 			include $template_path;
@@ -783,8 +726,7 @@ class WMBF_Cart_Grouping {
 										<td class="wc-cbs-item-price">
 											<?php
 											if ( $quantity > 0 && $item['total_qty'] > 0 ) {
-												$item_total = ( $item['cart_item']['line_total'] / $item['total_qty'] ) * $quantity;
-												echo wp_kses_post( wc_price( $item_total ) );
+												echo wp_kses_post( wc_price( self::get_item_price( $item ) ) );
 											}
 											?>
 										</td>
@@ -814,15 +756,7 @@ class WMBF_Cart_Grouping {
 	 * @return bool
 	 */
 	public static function cart_has_backorder_items() {
-		$groups = self::instance()->get_cart_groups();
-
-		foreach ( $groups as $group ) {
-			if ( 'ships_now' !== $group['id'] && ! empty( $group['items'] ) ) {
-				return true;
-			}
-		}
-
-		return false;
+		return self::groups_have_backorder( self::instance()->get_cart_groups() );
 	}
 
 	/**

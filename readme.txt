@@ -196,7 +196,12 @@ Available templates:
 * `wmbf_ships_now_label` - Customize "Ships Now" label
 * `wmbf_ships_now_description` - Customize "Ships Now" description
 * `wmbf_ships_now_color` - Customize "Ships Now" color
+* `wmbf_default_backorder_label` - Customize the "On Backorder" group label (items without a custom status)
+* `wmbf_default_backorder_description` - Customize the "On Backorder" group description
+* `wmbf_default_backorder_color` - Customize the "On Backorder" group color
 * `wmbf_cart_groups` - Modify cart groups data
+* `wmbf_order_groups` - Modify order groups data (order pages and emails)
+* `wmbf_locate_template` - Change the template file used
 
 **Actions:**
 

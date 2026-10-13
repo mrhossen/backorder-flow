@@ -142,7 +142,9 @@
 				if ( item.is_partial ) {
 					var partialBadge = document.createElement( 'span' );
 					partialBadge.className = 'wc-cbs-partial-badge';
-					partialBadge.textContent = '(' + item.quantity + ' of ' + item.total_qty + ' total)';
+					partialBadge.textContent = ( wmbfBlocksData.i18n.partial || '(%1$d of %2$d total)' )
+						.replace( '%1$d', item.quantity )
+						.replace( '%2$d', item.total_qty );
 					tdName.appendChild( partialBadge );
 				}
 

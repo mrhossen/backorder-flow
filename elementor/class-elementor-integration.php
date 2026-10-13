@@ -91,19 +91,20 @@ class WMBF_Elementor_Integration {
 		require_once WMBF_ELEMENTOR_DIR . 'widgets/class-widget-backorder-products.php';
 		require_once WMBF_ELEMENTOR_DIR . 'widgets/class-widget-backorder-badge.php';
 
-		// Register widgets - compatible with both old and new Elementor versions
-		if ( method_exists( $widgets_manager, 'register_widget_type' ) ) {
-			// Elementor 3.5.0+
-			$widgets_manager->register_widget_type( new WMBF_Widget_Product_Backorder_Status() );
-			$widgets_manager->register_widget_type( new WMBF_Widget_Cart_Backorder_Groups() );
-			$widgets_manager->register_widget_type( new WMBF_Widget_Backorder_Products() );
-			$widgets_manager->register_widget_type( new WMBF_Widget_Backorder_Badge() );
-		} elseif ( method_exists( $widgets_manager, 'register' ) ) {
-			// Older Elementor versions
-			$widgets_manager->register( new WMBF_Widget_Product_Backorder_Status() );
-			$widgets_manager->register( new WMBF_Widget_Cart_Backorder_Groups() );
-			$widgets_manager->register( new WMBF_Widget_Backorder_Products() );
-			$widgets_manager->register( new WMBF_Widget_Backorder_Badge() );
+		// Register widgets - register() is the Elementor 3.5.0+ API, register_widget_type() is the deprecated one.
+		$widgets = array(
+			new WMBF_Widget_Product_Backorder_Status(),
+			new WMBF_Widget_Cart_Backorder_Groups(),
+			new WMBF_Widget_Backorder_Products(),
+			new WMBF_Widget_Backorder_Badge(),
+		);
+
+		foreach ( $widgets as $widget ) {
+			if ( method_exists( $widgets_manager, 'register' ) ) {
+				$widgets_manager->register( $widget );
+			} elseif ( method_exists( $widgets_manager, 'register_widget_type' ) ) {
+				$widgets_manager->register_widget_type( $widget );
+			}
 		}
 	}
 
@@ -145,11 +146,11 @@ class WMBF_Elementor_Integration {
 
 		require_once WMBF_ELEMENTOR_DIR . 'dynamic-tags/class-backorder-status-tag.php';
 
-		// Register tag - compatible with both old and new Elementor versions
-		if ( method_exists( $dynamic_tags_manager, 'register_tag' ) ) {
-			$dynamic_tags_manager->register_tag( new WMBF_Backorder_Status_Tag() );
-		} elseif ( method_exists( $dynamic_tags_manager, 'register' ) ) {
+		// Register tag - register() is the Elementor 3.5.0+ API, register_tag() is the deprecated one.
+		if ( method_exists( $dynamic_tags_manager, 'register' ) ) {
 			$dynamic_tags_manager->register( new WMBF_Backorder_Status_Tag() );
+		} elseif ( method_exists( $dynamic_tags_manager, 'register_tag' ) ) {
+			$dynamic_tags_manager->register_tag( 'WMBF_Backorder_Status_Tag' );
 		}
 	}
 }

@@ -172,7 +172,8 @@
          * @param {string} message Notice message.
          */
         function showNotice(type, message) {
-            var $notice = $('<div class="notice notice-' + type + ' is-dismissible"><p>' + message + '</p></div>');
+            var $notice = $('<div class="notice is-dismissible"><p></p></div>');
+            $notice.addClass('notice-' + type).find('p').text(message);
             $('.wc-cbs-settings-wrap').prepend($notice);
 
             setTimeout(function() {
@@ -353,6 +354,16 @@
                 action: 'wmbf_update_status_order',
                 nonce: wmbfAdmin.nonce,
                 order: order
+            }, function(response) {
+                if (response.success) {
+                    // Priorities follow the new order; reload so the table shows them.
+                    showNotice('success', wmbfAdmin.i18n.orderSaved || response.data.message);
+                    setTimeout(function() {
+                        location.reload();
+                    }, 800);
+                } else {
+                    showNotice('error', (response.data && response.data.message) || wmbfAdmin.i18n.error);
+                }
             });
         }
 

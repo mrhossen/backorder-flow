@@ -53,13 +53,13 @@ class WMBF_Email_Handler {
 	 * @param WC_Email $email         Email object.
 	 */
 	public function add_backorder_info_to_email( $order, $sent_to_admin, $plain_text, $email ) {
-		$groups = $this->get_order_groups( $order );
+		$groups = WMBF_Order_Meta::get_order_groups( $order );
 
-		if ( empty( $groups ) || count( $groups ) <= 1 ) {
+		if ( ! WMBF_Order_Meta::groups_have_backorder( $groups ) ) {
 			return;
 		}
 
-		$template_path = WMBF_TEMPLATES_DIR . 'email-backorder-info.php';
+		$template_path = WMBF()->locate_template( 'email-backorder-info.php' );
 
 		if ( file_exists( $template_path ) ) {
 			include $template_path;
@@ -76,113 +76,31 @@ class WMBF_Email_Handler {
 	 * @param WC_Order $order   Order object.
 	 */
 	public function add_backorder_status_to_item( $item_id, $item, $order ) {
-		$product = $item->get_product();
-
-		if ( ! $product ) {
+		if ( ! is_callable( array( $item, 'get_product' ) ) ) {
 			return;
 		}
 
-		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
+		// Use the status saved when the order was placed.
+		$backorder_qty = (int) $item->get_meta( '_wmbf_backorder_quantity', true );
+		$status_id     = (string) $item->get_meta( '_wmbf_backorder_status_id', true );
+		$status_name   = (string) $item->get_meta( '_wmbf_backorder_status_name', true );
 
-		if ( ! $status ) {
+		if ( ! $backorder_qty || ! $status_name ) {
 			return;
 		}
 
-		// Check if item was on backorder when ordered.
-		$backorder_qty = $item->get_meta( '_wmbf_backorder_quantity', true );
+		$status = $status_id ? WMBF_Admin_Settings::instance()->get_status( $status_id ) : null;
+		$color  = ( $status && ! empty( $status['color'] ) ) ? $status['color'] : '#ff9800';
 
 		if ( $backorder_qty ) {
-			echo '<div class="wc-cbs-item-backorder-status" style="font-size: 12px; color: ' . esc_attr( $status['color'] ) . ';">';
-			echo '<strong>' . esc_html( $status['name'] ) . '</strong>';
+			echo '<div class="wc-cbs-item-backorder-status" style="font-size: 12px; color: ' . esc_attr( $color ) . ';">';
+			echo '<strong>' . esc_html( $status_name ) . '</strong>';
 			if ( $backorder_qty < $item->get_quantity() ) {
 				/* translators: %d: backorder quantity */
 				echo ' - ' . sprintf( esc_html__( '%d item(s)', 'backorder-flow' ), (int) $backorder_qty );
 			}
 			echo '</div>';
 		}
-	}
-
-	/**
-	 * Get order items grouped by backorder status.
-	 *
-	 * @param WC_Order $order Order object.
-	 * @return array
-	 */
-	private function get_order_groups( $order ) {
-		$groups = array();
-		$statuses = WMBF_Admin_Settings::instance()->get_statuses();
-
-		// Create "Ships Now" group.
-		$groups['ships_now'] = array(
-			'id'    => 'ships_now',
-			'name'  => __( 'Ships Now', 'backorder-flow' ),
-			'color' => '#4caf50',
-			'items' => array(),
-		);
-
-		// Create groups for each backorder status.
-		foreach ( $statuses as $status ) {
-			if ( isset( $status['enabled'] ) && $status['enabled'] ) {
-				$groups[ $status['id'] ] = array(
-					'id'    => $status['id'],
-					'name'  => $status['name'],
-					'color' => isset( $status['color'] ) ? $status['color'] : '#ff9800',
-					'items' => array(),
-				);
-			}
-		}
-
-		// Process order items.
-		foreach ( $order->get_items() as $item_id => $item ) {
-			$product = $item->get_product();
-
-			if ( ! $product ) {
-				continue;
-			}
-
-			$quantity = $item->get_quantity();
-			$backorder_qty = $item->get_meta( '_wmbf_backorder_quantity', true );
-			$instock_qty = $item->get_meta( '_wmbf_instock_quantity', true );
-
-			// If no meta saved, assume all in stock.
-			if ( ! $backorder_qty && ! $instock_qty ) {
-				$groups['ships_now']['items'][] = array(
-					'item'     => $item,
-					'product'  => $product,
-					'quantity' => $quantity,
-				);
-				continue;
-			}
-
-			// Add to ships now group.
-			if ( $instock_qty > 0 ) {
-				$groups['ships_now']['items'][] = array(
-					'item'     => $item,
-					'product'  => $product,
-					'quantity' => $instock_qty,
-				);
-			}
-
-			// Add to backorder group.
-			if ( $backorder_qty > 0 ) {
-				$backorder_status = WMBF_Product_Meta::get_product_backorder_status( $product );
-
-				if ( $backorder_status && isset( $groups[ $backorder_status['id'] ] ) ) {
-					$groups[ $backorder_status['id'] ]['items'][] = array(
-						'item'     => $item,
-						'product'  => $product,
-						'quantity' => $backorder_qty,
-					);
-				}
-			}
-		}
-
-		// Remove empty groups.
-		$groups = array_filter( $groups, function( $group ) {
-			return ! empty( $group['items'] );
-		});
-
-		return $groups;
 	}
 
 	/**
