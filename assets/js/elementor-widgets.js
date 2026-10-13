@@ -1,7 +1,7 @@
 /**
  * Elementor Widgets JavaScript
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 (function($) {

@@ -2,7 +2,7 @@
 /**
  * Elementor Dynamic Tag: Backorder Status
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 // Exit if accessed directly.
@@ -15,7 +15,7 @@ use Elementor\Core\DynamicTags\Tag;
 /**
  * Backorder Status Dynamic Tag.
  */
-class WMCBP_Backorder_Status_Tag extends Tag {
+class WMBF_Backorder_Status_Tag extends Tag {
 
 	/**
 	 * Get tag name.
@@ -32,7 +32,7 @@ class WMCBP_Backorder_Status_Tag extends Tag {
 	 * @return string
 	 */
 	public function get_title() {
-		return __( 'Product Backorder Status', 'custom-backorder-pro' );
+		return __( 'Product Backorder Status', 'backorder-flow' );
 	}
 
 	/**
@@ -75,16 +75,16 @@ class WMCBP_Backorder_Status_Tag extends Tag {
 	public function render() {
 		global $product;
 
-		$wmcbp_product = $product;
-		if ( ! $wmcbp_product ) {
-			$wmcbp_product = wc_get_product( get_the_ID() );
+		$wmbf_product = $product;
+		if ( ! $wmbf_product ) {
+			$wmbf_product = wc_get_product( get_the_ID() );
 		}
 
-		if ( ! $wmcbp_product ) {
+		if ( ! $wmbf_product ) {
 			return;
 		}
 
-		$status = WMCBP_Product_Meta::get_product_backorder_status( $wmcbp_product );
+		$status = WMBF_Product_Meta::get_product_backorder_status( $wmbf_product );
 
 		if ( ! $status ) {
 			return;

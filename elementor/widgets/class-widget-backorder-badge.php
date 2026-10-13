@@ -2,7 +2,7 @@
 /**
  * Elementor Widget: Backorder Badge
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 // Exit if accessed directly.
@@ -19,7 +19,7 @@ use Elementor\Group_Control_Box_Shadow;
 /**
  * Backorder Badge Widget.
  */
-class WMCBP_Widget_Backorder_Badge extends Widget_Base {
+class WMBF_Widget_Backorder_Badge extends Widget_Base {
 
 	/**
 	 * Get widget name.
@@ -36,7 +36,7 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 	 * @return string
 	 */
 	public function get_title() {
-		return __( 'Backorder Badge', 'custom-backorder-pro' );
+		return __( 'Backorder Badge', 'backorder-flow' );
 	}
 
 	/**
@@ -74,31 +74,31 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->start_controls_section(
 			'section_content',
 			array(
-				'label' => __( 'Content', 'custom-backorder-pro' ),
+				'label' => __( 'Content', 'backorder-flow' ),
 			)
 		);
 
 		$this->add_control(
 			'product_id',
 			array(
-				'label'       => __( 'Product ID', 'custom-backorder-pro' ),
+				'label'       => __( 'Product ID', 'backorder-flow' ),
 				'type'        => Controls_Manager::NUMBER,
 				'default'     => 0,
-				'description' => __( 'Leave 0 to use current product. Enter product ID to display specific product badge.', 'custom-backorder-pro' ),
+				'description' => __( 'Leave 0 to use current product. Enter product ID to display specific product badge.', 'backorder-flow' ),
 			)
 		);
 
 		$this->add_control(
 			'badge_style',
 			array(
-				'label'   => __( 'Badge Style', 'custom-backorder-pro' ),
+				'label'   => __( 'Badge Style', 'backorder-flow' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'flat',
 				'options' => array(
-					'flat'    => __( 'Flat', 'custom-backorder-pro' ),
-					'rounded' => __( 'Rounded', 'custom-backorder-pro' ),
-					'pill'    => __( 'Pill', 'custom-backorder-pro' ),
-					'custom'  => __( 'Custom', 'custom-backorder-pro' ),
+					'flat'    => __( 'Flat', 'backorder-flow' ),
+					'rounded' => __( 'Rounded', 'backorder-flow' ),
+					'pill'    => __( 'Pill', 'backorder-flow' ),
+					'custom'  => __( 'Custom', 'backorder-flow' ),
 				),
 			)
 		);
@@ -106,13 +106,13 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->add_control(
 			'badge_size',
 			array(
-				'label'   => __( 'Size', 'custom-backorder-pro' ),
+				'label'   => __( 'Size', 'backorder-flow' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'medium',
 				'options' => array(
-					'small'  => __( 'Small', 'custom-backorder-pro' ),
-					'medium' => __( 'Medium', 'custom-backorder-pro' ),
-					'large'  => __( 'Large', 'custom-backorder-pro' ),
+					'small'  => __( 'Small', 'backorder-flow' ),
+					'medium' => __( 'Medium', 'backorder-flow' ),
+					'large'  => __( 'Large', 'backorder-flow' ),
 				),
 			)
 		);
@@ -120,10 +120,10 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->add_control(
 			'show_icon',
 			array(
-				'label'        => __( 'Show Icon', 'custom-backorder-pro' ),
+				'label'        => __( 'Show Icon', 'backorder-flow' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'custom-backorder-pro' ),
-				'label_off'    => __( 'No', 'custom-backorder-pro' ),
+				'label_on'     => __( 'Yes', 'backorder-flow' ),
+				'label_off'    => __( 'No', 'backorder-flow' ),
 				'return_value' => 'yes',
 				'default'      => 'yes',
 			)
@@ -132,7 +132,7 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->add_control(
 			'icon',
 			array(
-				'label'     => __( 'Icon', 'custom-backorder-pro' ),
+				'label'     => __( 'Icon', 'backorder-flow' ),
 				'type'      => Controls_Manager::ICONS,
 				'default'   => array(
 					'value'   => 'fas fa-clock',
@@ -147,10 +147,10 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->add_control(
 			'animation_on_hover',
 			array(
-				'label'        => __( 'Animation on Hover', 'custom-backorder-pro' ),
+				'label'        => __( 'Animation on Hover', 'backorder-flow' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'custom-backorder-pro' ),
-				'label_off'    => __( 'No', 'custom-backorder-pro' ),
+				'label_on'     => __( 'Yes', 'backorder-flow' ),
+				'label_off'    => __( 'No', 'backorder-flow' ),
 				'return_value' => 'yes',
 				'default'      => 'no',
 			)
@@ -162,7 +162,7 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->start_controls_section(
 			'section_badge_style',
 			array(
-				'label' => __( 'Badge', 'custom-backorder-pro' ),
+				'label' => __( 'Badge', 'backorder-flow' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			)
 		);
@@ -170,7 +170,7 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->add_control(
 			'badge_background',
 			array(
-				'label'     => __( 'Background Color', 'custom-backorder-pro' ),
+				'label'     => __( 'Background Color', 'backorder-flow' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
 					'{{WRAPPER}} .wc-cbs-badge' => 'background-color: {{VALUE}};',
@@ -181,7 +181,7 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->add_control(
 			'badge_text_color',
 			array(
-				'label'     => __( 'Text Color', 'custom-backorder-pro' ),
+				'label'     => __( 'Text Color', 'backorder-flow' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
 					'{{WRAPPER}} .wc-cbs-badge' => 'color: {{VALUE}};',
@@ -208,7 +208,7 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->add_control(
 			'badge_border_radius',
 			array(
-				'label'      => __( 'Border Radius', 'custom-backorder-pro' ),
+				'label'      => __( 'Border Radius', 'backorder-flow' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', '%' ),
 				'selectors'  => array(
@@ -223,7 +223,7 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->add_control(
 			'badge_padding',
 			array(
-				'label'      => __( 'Padding', 'custom-backorder-pro' ),
+				'label'      => __( 'Padding', 'backorder-flow' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', 'em', '%' ),
 				'selectors'  => array(
@@ -246,7 +246,7 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->start_controls_section(
 			'section_icon_style',
 			array(
-				'label'     => __( 'Icon', 'custom-backorder-pro' ),
+				'label'     => __( 'Icon', 'backorder-flow' ),
 				'tab'       => Controls_Manager::TAB_STYLE,
 				'condition' => array(
 					'show_icon' => 'yes',
@@ -257,7 +257,7 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->add_control(
 			'icon_color',
 			array(
-				'label'     => __( 'Color', 'custom-backorder-pro' ),
+				'label'     => __( 'Color', 'backorder-flow' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
 					'{{WRAPPER}} .wc-cbs-badge-icon' => 'color: {{VALUE}};',
@@ -268,7 +268,7 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->add_control(
 			'icon_size',
 			array(
-				'label'      => __( 'Size', 'custom-backorder-pro' ),
+				'label'      => __( 'Size', 'backorder-flow' ),
 				'type'       => Controls_Manager::SLIDER,
 				'size_units' => array( 'px' ),
 				'range'      => array(
@@ -286,7 +286,7 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 		$this->add_control(
 			'icon_spacing',
 			array(
-				'label'      => __( 'Spacing', 'custom-backorder-pro' ),
+				'label'      => __( 'Spacing', 'backorder-flow' ),
 				'type'       => Controls_Manager::SLIDER,
 				'size_units' => array( 'px' ),
 				'range'      => array(
@@ -309,7 +309,7 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 	 */
 	protected function render() {
 		// Set flag to prevent default display
-		WMCBP_Frontend_Display::set_elementor_widget_rendered();
+		WMBF_Frontend_Display::set_elementor_widget_rendered();
 
 		// Ensure jQuery is enqueued.
 		wp_enqueue_script( 'jquery' );
@@ -340,17 +340,17 @@ class WMCBP_Widget_Backorder_Badge extends Widget_Base {
 
 		if ( ! $product ) {
 			if ( \Elementor\Plugin::$instance->editor->is_edit_mode() ) {
-				echo '<p>' . esc_html__( 'Product not found. This widget displays backorder badge.', 'custom-backorder-pro' ) . '</p>';
+				echo '<p>' . esc_html__( 'Product not found. This widget displays backorder badge.', 'backorder-flow' ) . '</p>';
 			}
 			return;
 		}
 
 		// Get backorder status.
-		$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 		if ( ! $status ) {
 			if ( \Elementor\Plugin::$instance->editor->is_edit_mode() ) {
-				echo '<p>' . esc_html__( 'No backorder status set for this product.', 'custom-backorder-pro' ) . '</p>';
+				echo '<p>' . esc_html__( 'No backorder status set for this product.', 'backorder-flow' ) . '</p>';
 			}
 			return;
 		}

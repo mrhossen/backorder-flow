@@ -2,7 +2,7 @@
 /**
  * Elementor Widget: Backorder Products
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 // Exit if accessed directly.
@@ -19,7 +19,7 @@ use Elementor\Group_Control_Image_Size;
 /**
  * Backorder Products Widget.
  */
-class WMCBP_Widget_Backorder_Products extends Widget_Base {
+class WMBF_Widget_Backorder_Products extends Widget_Base {
 
 	/**
 	 * Get widget name.
@@ -36,7 +36,7 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 	 * @return string
 	 */
 	public function get_title() {
-		return __( 'Backorder Products', 'custom-backorder-pro' );
+		return __( 'Backorder Products', 'backorder-flow' );
 	}
 
 	/**
@@ -74,12 +74,12 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->start_controls_section(
 			'section_query',
 			array(
-				'label' => __( 'Query', 'custom-backorder-pro' ),
+				'label' => __( 'Query', 'backorder-flow' ),
 			)
 		);
 
-		$statuses = WMCBP_Admin_Settings::instance()->get_statuses();
-		$status_options = array( '' => __( 'Select Status', 'custom-backorder-pro' ) );
+		$statuses = WMBF_Admin_Settings::instance()->get_statuses();
+		$status_options = array( '' => __( 'Select Status', 'backorder-flow' ) );
 
 		foreach ( $statuses as $status ) {
 			if ( isset( $status['enabled'] ) && $status['enabled'] ) {
@@ -90,7 +90,7 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->add_control(
 			'backorder_status',
 			array(
-				'label'   => __( 'Backorder Status', 'custom-backorder-pro' ),
+				'label'   => __( 'Backorder Status', 'backorder-flow' ),
 				'type'    => Controls_Manager::SELECT,
 				'options' => $status_options,
 			)
@@ -99,7 +99,7 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->add_control(
 			'posts_per_page',
 			array(
-				'label'   => __( 'Products Per Page', 'custom-backorder-pro' ),
+				'label'   => __( 'Products Per Page', 'backorder-flow' ),
 				'type'    => Controls_Manager::NUMBER,
 				'default' => 12,
 				'min'     => 1,
@@ -110,14 +110,14 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->add_control(
 			'orderby',
 			array(
-				'label'   => __( 'Order By', 'custom-backorder-pro' ),
+				'label'   => __( 'Order By', 'backorder-flow' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'date',
 				'options' => array(
-					'date'  => __( 'Date', 'custom-backorder-pro' ),
-					'title' => __( 'Title', 'custom-backorder-pro' ),
-					'price' => __( 'Price', 'custom-backorder-pro' ),
-					'rand'  => __( 'Random', 'custom-backorder-pro' ),
+					'date'  => __( 'Date', 'backorder-flow' ),
+					'title' => __( 'Title', 'backorder-flow' ),
+					'price' => __( 'Price', 'backorder-flow' ),
+					'rand'  => __( 'Random', 'backorder-flow' ),
 				),
 			)
 		);
@@ -125,12 +125,12 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->add_control(
 			'order',
 			array(
-				'label'   => __( 'Order', 'custom-backorder-pro' ),
+				'label'   => __( 'Order', 'backorder-flow' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'DESC',
 				'options' => array(
-					'ASC'  => __( 'Ascending', 'custom-backorder-pro' ),
-					'DESC' => __( 'Descending', 'custom-backorder-pro' ),
+					'ASC'  => __( 'Ascending', 'backorder-flow' ),
+					'DESC' => __( 'Descending', 'backorder-flow' ),
 				),
 			)
 		);
@@ -141,20 +141,20 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->start_controls_section(
 			'section_layout',
 			array(
-				'label' => __( 'Layout', 'custom-backorder-pro' ),
+				'label' => __( 'Layout', 'backorder-flow' ),
 			)
 		);
 
 		$this->add_control(
 			'layout',
 			array(
-				'label'   => __( 'Layout', 'custom-backorder-pro' ),
+				'label'   => __( 'Layout', 'backorder-flow' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'grid',
 				'options' => array(
-					'grid'     => __( 'Grid', 'custom-backorder-pro' ),
-					'list'     => __( 'List', 'custom-backorder-pro' ),
-					'carousel' => __( 'Carousel', 'custom-backorder-pro' ),
+					'grid'     => __( 'Grid', 'backorder-flow' ),
+					'list'     => __( 'List', 'backorder-flow' ),
+					'carousel' => __( 'Carousel', 'backorder-flow' ),
 				),
 			)
 		);
@@ -162,7 +162,7 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->add_responsive_control(
 			'columns',
 			array(
-				'label'          => __( 'Columns', 'custom-backorder-pro' ),
+				'label'          => __( 'Columns', 'backorder-flow' ),
 				'type'           => Controls_Manager::SELECT,
 				'default'        => '4',
 				'tablet_default' => '2',
@@ -184,10 +184,10 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->add_control(
 			'show_image',
 			array(
-				'label'        => __( 'Show Image', 'custom-backorder-pro' ),
+				'label'        => __( 'Show Image', 'backorder-flow' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'custom-backorder-pro' ),
-				'label_off'    => __( 'No', 'custom-backorder-pro' ),
+				'label_on'     => __( 'Yes', 'backorder-flow' ),
+				'label_off'    => __( 'No', 'backorder-flow' ),
 				'return_value' => 'yes',
 				'default'      => 'yes',
 			)
@@ -196,10 +196,10 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->add_control(
 			'show_title',
 			array(
-				'label'        => __( 'Show Title', 'custom-backorder-pro' ),
+				'label'        => __( 'Show Title', 'backorder-flow' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'custom-backorder-pro' ),
-				'label_off'    => __( 'No', 'custom-backorder-pro' ),
+				'label_on'     => __( 'Yes', 'backorder-flow' ),
+				'label_off'    => __( 'No', 'backorder-flow' ),
 				'return_value' => 'yes',
 				'default'      => 'yes',
 			)
@@ -208,10 +208,10 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->add_control(
 			'show_price',
 			array(
-				'label'        => __( 'Show Price', 'custom-backorder-pro' ),
+				'label'        => __( 'Show Price', 'backorder-flow' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'custom-backorder-pro' ),
-				'label_off'    => __( 'No', 'custom-backorder-pro' ),
+				'label_on'     => __( 'Yes', 'backorder-flow' ),
+				'label_off'    => __( 'No', 'backorder-flow' ),
 				'return_value' => 'yes',
 				'default'      => 'yes',
 			)
@@ -220,10 +220,10 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->add_control(
 			'show_add_to_cart',
 			array(
-				'label'        => __( 'Show Add to Cart', 'custom-backorder-pro' ),
+				'label'        => __( 'Show Add to Cart', 'backorder-flow' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'custom-backorder-pro' ),
-				'label_off'    => __( 'No', 'custom-backorder-pro' ),
+				'label_on'     => __( 'Yes', 'backorder-flow' ),
+				'label_off'    => __( 'No', 'backorder-flow' ),
 				'return_value' => 'yes',
 				'default'      => 'yes',
 			)
@@ -232,10 +232,10 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->add_control(
 			'show_badge',
 			array(
-				'label'        => __( 'Show Backorder Badge', 'custom-backorder-pro' ),
+				'label'        => __( 'Show Backorder Badge', 'backorder-flow' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'custom-backorder-pro' ),
-				'label_off'    => __( 'No', 'custom-backorder-pro' ),
+				'label_on'     => __( 'Yes', 'backorder-flow' ),
+				'label_off'    => __( 'No', 'backorder-flow' ),
 				'return_value' => 'yes',
 				'default'      => 'yes',
 			)
@@ -258,7 +258,7 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->start_controls_section(
 			'section_product_style',
 			array(
-				'label' => __( 'Products', 'custom-backorder-pro' ),
+				'label' => __( 'Products', 'backorder-flow' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			)
 		);
@@ -266,7 +266,7 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->add_control(
 			'column_gap',
 			array(
-				'label'      => __( 'Column Gap', 'custom-backorder-pro' ),
+				'label'      => __( 'Column Gap', 'backorder-flow' ),
 				'type'       => Controls_Manager::SLIDER,
 				'size_units' => array( 'px' ),
 				'range'      => array(
@@ -292,7 +292,7 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 		$this->add_control(
 			'product_padding',
 			array(
-				'label'      => __( 'Padding', 'custom-backorder-pro' ),
+				'label'      => __( 'Padding', 'backorder-flow' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', 'em', '%' ),
 				'selectors'  => array(
@@ -312,7 +312,7 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 
 		if ( empty( $settings['backorder_status'] ) ) {
 			if ( \Elementor\Plugin::$instance->editor->is_edit_mode() ) {
-				echo '<p>' . esc_html__( 'Please select a backorder status in the widget settings.', 'custom-backorder-pro' ) . '</p>';
+				echo '<p>' . esc_html__( 'Please select a backorder status in the widget settings.', 'backorder-flow' ) . '</p>';
 			}
 			return;
 		}
@@ -325,7 +325,7 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required to filter products by backorder status for Elementor widget.
 			'meta_query'     => array(
 				array(
-					'key'   => '_wmcbp_backorder_status',
+					'key'   => '_wmbf_backorder_status',
 					'value' => $settings['backorder_status'],
 				),
 			),
@@ -335,7 +335,7 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 
 		if ( ! $query->have_posts() ) {
 			if ( \Elementor\Plugin::$instance->editor->is_edit_mode() ) {
-				echo '<p>' . esc_html__( 'No products found with this backorder status.', 'custom-backorder-pro' ) . '</p>';
+				echo '<p>' . esc_html__( 'No products found with this backorder status.', 'backorder-flow' ) . '</p>';
 			}
 			return;
 		}
@@ -373,7 +373,7 @@ class WMCBP_Widget_Backorder_Products extends Widget_Base {
 					</a>
 					<?php if ( 'yes' === $settings['show_badge'] ) : ?>
 						<?php
-						$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+						$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 						if ( $status ) :
 							?>
 							<span class="wc-cbs-product-badge" style="background-color: <?php echo esc_attr( $status['color'] ); ?>;">

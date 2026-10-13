@@ -1,7 +1,7 @@
 /**
  * Admin JavaScript
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 (function($) {
@@ -49,7 +49,7 @@
         // Delete status button.
         $(document).on('click', '.wc-cbs-delete-status', function(e) {
             e.preventDefault();
-            if (confirm(wmcbpAdmin.i18n.confirmDelete)) {
+            if (confirm(wmbfAdmin.i18n.confirmDelete)) {
                 var statusId = $(this).data('status-id');
                 deleteStatus(statusId);
             }
@@ -98,7 +98,7 @@
                         var data = JSON.parse(e.target.result);
                         importStatuses(data);
                     } catch (err) {
-                        alert(wmcbpAdmin.i18n.error);
+                        alert(wmbfAdmin.i18n.error);
                     }
                 };
                 reader.readAsText(file);
@@ -148,19 +148,19 @@
             var message = $('#wc-cbs-default-message').val();
             var $button = $('.wc-cbs-save-default-message');
 
-            $button.prop('disabled', true).text(wmcbpAdmin.i18n.saving || 'Saving...');
+            $button.prop('disabled', true).text(wmbfAdmin.i18n.saving || 'Saving...');
 
-            $.post(wmcbpAdmin.ajaxUrl, {
-                action: 'wmcbp_save_default_message',
-                nonce: wmcbpAdmin.nonce,
+            $.post(wmbfAdmin.ajaxUrl, {
+                action: 'wmbf_save_default_message',
+                nonce: wmbfAdmin.nonce,
                 message: message
             }, function(response) {
-                $button.prop('disabled', false).text(wmcbpAdmin.i18n.saveDefaultMessage || 'Save Default Message');
+                $button.prop('disabled', false).text(wmbfAdmin.i18n.saveDefaultMessage || 'Save Default Message');
 
                 if (response.success) {
                     showNotice('success', response.data.message);
                 } else {
-                    showNotice('error', response.data.message || wmcbpAdmin.i18n.error);
+                    showNotice('error', response.data.message || wmbfAdmin.i18n.error);
                 }
             });
         }
@@ -198,7 +198,7 @@
 
             if (statusData) {
                 // Edit mode.
-                $('.wc-cbs-modal-title').text(wmcbpAdmin.i18n.editStatus || 'Edit Status');
+                $('.wc-cbs-modal-title').text(wmbfAdmin.i18n.editStatus || 'Edit Status');
                 $('#wc-cbs-status-id').val(statusData.id);
                 $('#wc-cbs-status-name').val(statusData.name);
                 $('#wc-cbs-status-description').val(statusData.description);
@@ -211,7 +211,7 @@
                 $('#wc-cbs-status-id-value').val(statusData.id);
             } else {
                 // Add mode.
-                $('.wc-cbs-modal-title').text(wmcbpAdmin.i18n.addStatus || 'Add New Status');
+                $('.wc-cbs-modal-title').text(wmbfAdmin.i18n.addStatus || 'Add New Status');
 
                 // Clear all fields manually.
                 $('#wc-cbs-status-name').val('');
@@ -246,7 +246,7 @@
             var statusName = $('#wc-cbs-status-name').val();
 
             if (!statusName || statusName.trim() === '') {
-                alert(wmcbpAdmin.i18n.enterName || 'Please enter a status name');
+                alert(wmbfAdmin.i18n.enterName || 'Please enter a status name');
                 return false;
             }
 
@@ -271,8 +271,8 @@
             }
 
             var formData = {
-                action: 'wmcbp_add_status',
-                nonce: wmcbpAdmin.nonce,
+                action: 'wmbf_add_status',
+                nonce: wmbfAdmin.nonce,
                 status_id: $('#wc-cbs-status-id').val(),
                 name: statusName.trim(),
                 description: $('#wc-cbs-status-description').val(),
@@ -283,10 +283,10 @@
 
             // Disable submit button.
             var $submitBtn = $('.wc-cbs-save-status-btn');
-            $submitBtn.prop('disabled', true).text(wmcbpAdmin.i18n.saving || 'Saving...');
+            $submitBtn.prop('disabled', true).text(wmbfAdmin.i18n.saving || 'Saving...');
 
             $.ajax({
-                url: wmcbpAdmin.ajaxUrl,
+                url: wmbfAdmin.ajaxUrl,
                 type: 'POST',
                 data: formData,
                 success: function(response) {
@@ -301,13 +301,13 @@
                             location.reload(true);
                         }, 500);
                     } else {
-                        alert(response.data.message || wmcbpAdmin.i18n.error);
-                        $submitBtn.prop('disabled', false).text(wmcbpAdmin.i18n.saveStatus || 'Save Status');
+                        alert(response.data.message || wmbfAdmin.i18n.error);
+                        $submitBtn.prop('disabled', false).text(wmbfAdmin.i18n.saveStatus || 'Save Status');
                     }
                 },
                 error: function() {
-                    alert(wmcbpAdmin.i18n.error);
-                    $submitBtn.prop('disabled', false).text(wmcbpAdmin.i18n.saveStatus || 'Save Status');
+                    alert(wmbfAdmin.i18n.error);
+                    $submitBtn.prop('disabled', false).text(wmbfAdmin.i18n.saveStatus || 'Save Status');
                 }
             });
 
@@ -320,9 +320,9 @@
          * @param {string} statusId Status ID.
          */
         function deleteStatus(statusId) {
-            $.post(wmcbpAdmin.ajaxUrl, {
-                action: 'wmcbp_delete_status',
-                nonce: wmcbpAdmin.nonce,
+            $.post(wmbfAdmin.ajaxUrl, {
+                action: 'wmbf_delete_status',
+                nonce: wmbfAdmin.nonce,
                 status_id: statusId
             }, function(response) {
                 if (response.success) {
@@ -335,7 +335,7 @@
                         location.reload(true);
                     }, 500);
                 } else {
-                    alert(response.data.message || wmcbpAdmin.i18n.error);
+                    alert(response.data.message || wmbfAdmin.i18n.error);
                 }
             });
         }
@@ -349,9 +349,9 @@
                 order.push($(this).data('status-id'));
             });
 
-            $.post(wmcbpAdmin.ajaxUrl, {
-                action: 'wmcbp_update_status_order',
-                nonce: wmcbpAdmin.nonce,
+            $.post(wmbfAdmin.ajaxUrl, {
+                action: 'wmbf_update_status_order',
+                nonce: wmbfAdmin.nonce,
                 order: order
             });
         }
@@ -360,9 +360,9 @@
          * Export statuses.
          */
         function exportStatuses() {
-            $.post(wmcbpAdmin.ajaxUrl, {
-                action: 'wmcbp_export_statuses',
-                nonce: wmcbpAdmin.nonce
+            $.post(wmbfAdmin.ajaxUrl, {
+                action: 'wmbf_export_statuses',
+                nonce: wmbfAdmin.nonce
             }, function(response) {
                 if (response.success) {
                     var dataStr = JSON.stringify(response.data.data, null, 2);
@@ -382,10 +382,10 @@
          * @param {Object} data Statuses data.
          */
         function importStatuses(data) {
-            if (confirm(wmcbpAdmin.i18n.confirmImport || 'This will replace all existing statuses. Are you sure?')) {
-                $.post(wmcbpAdmin.ajaxUrl, {
-                    action: 'wmcbp_import_statuses',
-                    nonce: wmcbpAdmin.nonce,
+            if (confirm(wmbfAdmin.i18n.confirmImport || 'This will replace all existing statuses. Are you sure?')) {
+                $.post(wmbfAdmin.ajaxUrl, {
+                    action: 'wmbf_import_statuses',
+                    nonce: wmbfAdmin.nonce,
                     data: JSON.stringify(data)
                 }, function(response) {
                     if (response.success) {
@@ -398,7 +398,7 @@
                             location.reload(true);
                         }, 500);
                     } else {
-                        alert(response.data.message || wmcbpAdmin.i18n.error);
+                        alert(response.data.message || wmbfAdmin.i18n.error);
                     }
                 });
             }

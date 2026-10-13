@@ -4,7 +4,7 @@
  *
  * Handles backorder information in order emails.
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 // Exit if accessed directly.
@@ -13,21 +13,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WMCBP_Email_Handler class.
+ * WMBF_Email_Handler class.
  */
-class WMCBP_Email_Handler {
+class WMBF_Email_Handler {
 
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var WMCBP_Email_Handler
+	 * @var WMBF_Email_Handler
 	 */
 	protected static $_instance = null;
 
 	/**
 	 * Main instance.
 	 *
-	 * @return WMCBP_Email_Handler
+	 * @return WMBF_Email_Handler
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
@@ -59,7 +59,7 @@ class WMCBP_Email_Handler {
 			return;
 		}
 
-		$template_path = WMCBP_TEMPLATES_DIR . 'email-backorder-info.php';
+		$template_path = WMBF_TEMPLATES_DIR . 'email-backorder-info.php';
 
 		if ( file_exists( $template_path ) ) {
 			include $template_path;
@@ -82,21 +82,21 @@ class WMCBP_Email_Handler {
 			return;
 		}
 
-		$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 		if ( ! $status ) {
 			return;
 		}
 
 		// Check if item was on backorder when ordered.
-		$backorder_qty = $item->get_meta( '_wmcbp_backorder_quantity', true );
+		$backorder_qty = $item->get_meta( '_wmbf_backorder_quantity', true );
 
 		if ( $backorder_qty ) {
 			echo '<div class="wc-cbs-item-backorder-status" style="font-size: 12px; color: ' . esc_attr( $status['color'] ) . ';">';
 			echo '<strong>' . esc_html( $status['name'] ) . '</strong>';
 			if ( $backorder_qty < $item->get_quantity() ) {
 				/* translators: %d: backorder quantity */
-				echo ' - ' . sprintf( esc_html__( '%d item(s)', 'custom-backorder-pro' ), (int) $backorder_qty );
+				echo ' - ' . sprintf( esc_html__( '%d item(s)', 'backorder-flow' ), (int) $backorder_qty );
 			}
 			echo '</div>';
 		}
@@ -110,12 +110,12 @@ class WMCBP_Email_Handler {
 	 */
 	private function get_order_groups( $order ) {
 		$groups = array();
-		$statuses = WMCBP_Admin_Settings::instance()->get_statuses();
+		$statuses = WMBF_Admin_Settings::instance()->get_statuses();
 
 		// Create "Ships Now" group.
 		$groups['ships_now'] = array(
 			'id'    => 'ships_now',
-			'name'  => __( 'Ships Now', 'custom-backorder-pro' ),
+			'name'  => __( 'Ships Now', 'backorder-flow' ),
 			'color' => '#4caf50',
 			'items' => array(),
 		);
@@ -141,8 +141,8 @@ class WMCBP_Email_Handler {
 			}
 
 			$quantity = $item->get_quantity();
-			$backorder_qty = $item->get_meta( '_wmcbp_backorder_quantity', true );
-			$instock_qty = $item->get_meta( '_wmcbp_instock_quantity', true );
+			$backorder_qty = $item->get_meta( '_wmbf_backorder_quantity', true );
+			$instock_qty = $item->get_meta( '_wmbf_instock_quantity', true );
 
 			// If no meta saved, assume all in stock.
 			if ( ! $backorder_qty && ! $instock_qty ) {
@@ -165,7 +165,7 @@ class WMCBP_Email_Handler {
 
 			// Add to backorder group.
 			if ( $backorder_qty > 0 ) {
-				$backorder_status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+				$backorder_status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 				if ( $backorder_status && isset( $groups[ $backorder_status['id'] ] ) ) {
 					$groups[ $backorder_status['id'] ]['items'][] = array(
@@ -193,7 +193,7 @@ class WMCBP_Email_Handler {
 	 */
 	private function render_inline_email_info( $groups, $plain_text ) {
 		if ( $plain_text ) {
-			echo "\n\n" . esc_html__( 'SHIPPING GROUPS', 'custom-backorder-pro' ) . "\n";
+			echo "\n\n" . esc_html__( 'SHIPPING GROUPS', 'backorder-flow' ) . "\n";
 			echo esc_html( str_repeat( '=', 50 ) ) . "\n";
 
 			foreach ( $groups as $group ) {
@@ -205,10 +205,10 @@ class WMCBP_Email_Handler {
 		} else {
 			?>
 			<h2 style="color: #333; font-size: 18px; margin: 20px 0 10px;">
-				<?php esc_html_e( 'Shipping Groups', 'custom-backorder-pro' ); ?>
+				<?php esc_html_e( 'Shipping Groups', 'backorder-flow' ); ?>
 			</h2>
 			<p style="margin: 0 0 20px;">
-				<?php esc_html_e( 'Your order contains items that will ship at different times:', 'custom-backorder-pro' ); ?>
+				<?php esc_html_e( 'Your order contains items that will ship at different times:', 'backorder-flow' ); ?>
 			</p>
 
 			<?php foreach ( $groups as $group ) : ?>

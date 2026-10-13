@@ -4,7 +4,7 @@
  *
  * Handles all plugin shortcodes.
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 // Exit if accessed directly.
@@ -13,21 +13,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WMCBP_Shortcodes class.
+ * WMBF_Shortcodes class.
  */
-class WMCBP_Shortcodes {
+class WMBF_Shortcodes {
 
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var WMCBP_Shortcodes
+	 * @var WMBF_Shortcodes
 	 */
 	protected static $_instance = null;
 
 	/**
 	 * Main instance.
 	 *
-	 * @return WMCBP_Shortcodes
+	 * @return WMBF_Shortcodes
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
@@ -48,10 +48,10 @@ class WMCBP_Shortcodes {
 	 * Register all shortcodes.
 	 */
 	private function register_shortcodes() {
-		add_shortcode( 'wmcbp_backorder_status', array( $this, 'backorder_status_shortcode' ) );
-		add_shortcode( 'wmcbp_backorder_groups', array( $this, 'backorder_groups_shortcode' ) );
-		add_shortcode( 'wmcbp_backorder_products', array( $this, 'backorder_products_shortcode' ) );
-		add_shortcode( 'wmcbp_backorder_badge', array( $this, 'backorder_badge_shortcode' ) );
+		add_shortcode( 'wmbf_backorder_status', array( $this, 'backorder_status_shortcode' ) );
+		add_shortcode( 'wmbf_backorder_groups', array( $this, 'backorder_groups_shortcode' ) );
+		add_shortcode( 'wmbf_backorder_products', array( $this, 'backorder_products_shortcode' ) );
+		add_shortcode( 'wmbf_backorder_badge', array( $this, 'backorder_badge_shortcode' ) );
 	}
 
 	/**
@@ -65,14 +65,14 @@ class WMCBP_Shortcodes {
 		}
 
 		// Check if any of our shortcodes are present.
-		if ( has_shortcode( $post->post_content, 'wmcbp_backorder_status' ) ||
-		     has_shortcode( $post->post_content, 'wmcbp_backorder_badge' ) ) {
+		if ( has_shortcode( $post->post_content, 'wmbf_backorder_status' ) ||
+		     has_shortcode( $post->post_content, 'wmbf_backorder_badge' ) ) {
 			wp_enqueue_script( 'jquery' );
 		}
 	}
 
 	/**
-	 * Shortcode: [wmcbp_backorder_status]
+	 * Shortcode: [wmbf_backorder_status]
 	 * Display current product's backorder status.
 	 *
 	 * @param array $atts Shortcode attributes.
@@ -80,7 +80,7 @@ class WMCBP_Shortcodes {
 	 */
 	public function backorder_status_shortcode( $atts ) {
 		// Set flag to prevent default display when shortcode is used
-		WMCBP_Frontend_Display::set_elementor_widget_rendered();
+		WMBF_Frontend_Display::set_elementor_widget_rendered();
 
 		$atts = shortcode_atts(
 			array(
@@ -88,7 +88,7 @@ class WMCBP_Shortcodes {
 				'style'      => 'badge', // badge, text, full
 			),
 			$atts,
-			'wmcbp_backorder_status'
+			'wmbf_backorder_status'
 		);
 
 		$product = wc_get_product( $atts['product_id'] );
@@ -97,7 +97,7 @@ class WMCBP_Shortcodes {
 			return '';
 		}
 
-		$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 		if ( ! $status ) {
 			return '';
@@ -157,7 +157,7 @@ class WMCBP_Shortcodes {
 	}
 
 	/**
-	 * Shortcode: [wmcbp_backorder_groups]
+	 * Shortcode: [wmbf_backorder_groups]
 	 * Display cart grouped by backorder status.
 	 *
 	 * @param array $atts Shortcode attributes.
@@ -171,13 +171,13 @@ class WMCBP_Shortcodes {
 				'show_prices' => 'yes',
 			),
 			$atts,
-			'wmcbp_backorder_groups'
+			'wmbf_backorder_groups'
 		);
 
-		$groups = WMCBP_Cart_Grouping::get_groups();
+		$groups = WMBF_Cart_Grouping::get_groups();
 
 		if ( empty( $groups ) ) {
-			return '<p class="wc-cbs-no-items">' . esc_html__( 'No items in cart.', 'custom-backorder-pro' ) . '</p>';
+			return '<p class="wc-cbs-no-items">' . esc_html__( 'No items in cart.', 'backorder-flow' ) . '</p>';
 		}
 
 		ob_start();
@@ -227,7 +227,7 @@ class WMCBP_Shortcodes {
 	}
 
 	/**
-	 * Shortcode: [wmcbp_backorder_products]
+	 * Shortcode: [wmbf_backorder_products]
 	 * Display products with specific backorder status.
 	 *
 	 * @param array $atts Shortcode attributes.
@@ -243,11 +243,11 @@ class WMCBP_Shortcodes {
 				'order'     => 'DESC',
 			),
 			$atts,
-			'wmcbp_backorder_products'
+			'wmbf_backorder_products'
 		);
 
 		if ( empty( $atts['status'] ) ) {
-			return '<p class="wc-cbs-error">' . esc_html__( 'Please specify a backorder status.', 'custom-backorder-pro' ) . '</p>';
+			return '<p class="wc-cbs-error">' . esc_html__( 'Please specify a backorder status.', 'backorder-flow' ) . '</p>';
 		}
 
 		$args = array(
@@ -258,7 +258,7 @@ class WMCBP_Shortcodes {
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Required to filter products by backorder status.
 			'meta_query'     => array(
 				array(
-					'key'   => '_wmcbp_backorder_status',
+					'key'   => '_wmbf_backorder_status',
 					'value' => $atts['status'],
 				),
 			),
@@ -267,7 +267,7 @@ class WMCBP_Shortcodes {
 		$query = new WP_Query( $args );
 
 		if ( ! $query->have_posts() ) {
-			return '<p class="wc-cbs-no-products">' . esc_html__( 'No products found.', 'custom-backorder-pro' ) . '</p>';
+			return '<p class="wc-cbs-no-products">' . esc_html__( 'No products found.', 'backorder-flow' ) . '</p>';
 		}
 
 		ob_start();
@@ -288,7 +288,7 @@ class WMCBP_Shortcodes {
 	}
 
 	/**
-	 * Shortcode: [wmcbp_backorder_badge]
+	 * Shortcode: [wmbf_backorder_badge]
 	 * Display backorder badge for specific product.
 	 *
 	 * @param array $atts Shortcode attributes.
@@ -300,7 +300,7 @@ class WMCBP_Shortcodes {
 				'product_id' => get_the_ID(),
 			),
 			$atts,
-			'wmcbp_backorder_badge'
+			'wmbf_backorder_badge'
 		);
 
 		return $this->backorder_status_shortcode( array(
@@ -332,7 +332,7 @@ class WMCBP_Shortcodes {
 			<td class="wc-cbs-item-quantity">
 				<?php
 				/* translators: %d: quantity */
-				printf( esc_html__( 'Qty: %d', 'custom-backorder-pro' ), (int) $quantity );
+				printf( esc_html__( 'Qty: %d', 'backorder-flow' ), (int) $quantity );
 				?>
 			</td>
 			<?php if ( 'yes' === $atts['show_prices'] ) : ?>
@@ -402,7 +402,7 @@ class WMCBP_Shortcodes {
 				<p class="wc-cbs-item-quantity">
 					<?php
 					/* translators: %d: quantity */
-					printf( esc_html__( 'Quantity: %d', 'custom-backorder-pro' ), (int) $quantity );
+					printf( esc_html__( 'Quantity: %d', 'backorder-flow' ), (int) $quantity );
 					?>
 				</p>
 				<?php if ( 'yes' === $atts['show_prices'] ) : ?>

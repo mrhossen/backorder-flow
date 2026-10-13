@@ -2,7 +2,7 @@
 /**
  * Elementor Widget: Cart Backorder Groups
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 // Exit if accessed directly.
@@ -18,7 +18,7 @@ use Elementor\Group_Control_Border;
 /**
  * Cart Backorder Groups Widget.
  */
-class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
+class WMBF_Widget_Cart_Backorder_Groups extends Widget_Base {
 
 	/**
 	 * Get widget name.
@@ -35,7 +35,7 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 	 * @return string
 	 */
 	public function get_title() {
-		return __( 'Cart Backorder Groups', 'custom-backorder-pro' );
+		return __( 'Cart Backorder Groups', 'backorder-flow' );
 	}
 
 	/**
@@ -73,20 +73,20 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->start_controls_section(
 			'section_content',
 			array(
-				'label' => __( 'Content', 'custom-backorder-pro' ),
+				'label' => __( 'Content', 'backorder-flow' ),
 			)
 		);
 
 		$this->add_control(
 			'layout',
 			array(
-				'label'   => __( 'Layout', 'custom-backorder-pro' ),
+				'label'   => __( 'Layout', 'backorder-flow' ),
 				'type'    => Controls_Manager::SELECT,
 				'default' => 'table',
 				'options' => array(
-					'table' => __( 'Table', 'custom-backorder-pro' ),
-					'list'  => __( 'List', 'custom-backorder-pro' ),
-					'cards' => __( 'Cards', 'custom-backorder-pro' ),
+					'table' => __( 'Table', 'backorder-flow' ),
+					'list'  => __( 'List', 'backorder-flow' ),
+					'cards' => __( 'Cards', 'backorder-flow' ),
 				),
 			)
 		);
@@ -94,10 +94,10 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->add_control(
 			'show_thumbnails',
 			array(
-				'label'        => __( 'Show Thumbnails', 'custom-backorder-pro' ),
+				'label'        => __( 'Show Thumbnails', 'backorder-flow' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'custom-backorder-pro' ),
-				'label_off'    => __( 'No', 'custom-backorder-pro' ),
+				'label_on'     => __( 'Yes', 'backorder-flow' ),
+				'label_off'    => __( 'No', 'backorder-flow' ),
 				'return_value' => 'yes',
 				'default'      => 'yes',
 			)
@@ -106,10 +106,10 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->add_control(
 			'show_prices',
 			array(
-				'label'        => __( 'Show Prices', 'custom-backorder-pro' ),
+				'label'        => __( 'Show Prices', 'backorder-flow' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'custom-backorder-pro' ),
-				'label_off'    => __( 'No', 'custom-backorder-pro' ),
+				'label_on'     => __( 'Yes', 'backorder-flow' ),
+				'label_off'    => __( 'No', 'backorder-flow' ),
 				'return_value' => 'yes',
 				'default'      => 'yes',
 			)
@@ -118,10 +118,10 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->add_control(
 			'show_quantities',
 			array(
-				'label'        => __( 'Show Quantities', 'custom-backorder-pro' ),
+				'label'        => __( 'Show Quantities', 'backorder-flow' ),
 				'type'         => Controls_Manager::SWITCHER,
-				'label_on'     => __( 'Yes', 'custom-backorder-pro' ),
-				'label_off'    => __( 'No', 'custom-backorder-pro' ),
+				'label_on'     => __( 'Yes', 'backorder-flow' ),
+				'label_off'    => __( 'No', 'backorder-flow' ),
 				'return_value' => 'yes',
 				'default'      => 'yes',
 			)
@@ -133,7 +133,7 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->start_controls_section(
 			'section_group_header_style',
 			array(
-				'label' => __( 'Group Header', 'custom-backorder-pro' ),
+				'label' => __( 'Group Header', 'backorder-flow' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			)
 		);
@@ -149,7 +149,7 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->add_control(
 			'group_header_padding',
 			array(
-				'label'      => __( 'Padding', 'custom-backorder-pro' ),
+				'label'      => __( 'Padding', 'backorder-flow' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', 'em', '%' ),
 				'selectors'  => array(
@@ -161,7 +161,7 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->add_control(
 			'group_header_margin',
 			array(
-				'label'      => __( 'Margin', 'custom-backorder-pro' ),
+				'label'      => __( 'Margin', 'backorder-flow' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', 'em', '%' ),
 				'selectors'  => array(
@@ -176,7 +176,7 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->start_controls_section(
 			'section_items_style',
 			array(
-				'label' => __( 'Items', 'custom-backorder-pro' ),
+				'label' => __( 'Items', 'backorder-flow' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			)
 		);
@@ -192,7 +192,7 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->add_control(
 			'item_padding',
 			array(
-				'label'      => __( 'Padding', 'custom-backorder-pro' ),
+				'label'      => __( 'Padding', 'backorder-flow' ),
 				'type'       => Controls_Manager::DIMENSIONS,
 				'size_units' => array( 'px', 'em', '%' ),
 				'selectors'  => array(
@@ -204,7 +204,7 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->add_control(
 			'item_spacing',
 			array(
-				'label'      => __( 'Spacing Between Items', 'custom-backorder-pro' ),
+				'label'      => __( 'Spacing Between Items', 'backorder-flow' ),
 				'type'       => Controls_Manager::SLIDER,
 				'size_units' => array( 'px' ),
 				'range'      => array(
@@ -233,7 +233,7 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->start_controls_section(
 			'section_columns_style',
 			array(
-				'label'     => __( 'Columns', 'custom-backorder-pro' ),
+				'label'     => __( 'Columns', 'backorder-flow' ),
 				'tab'       => Controls_Manager::TAB_STYLE,
 				'condition' => array(
 					'layout' => 'cards',
@@ -244,7 +244,7 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->add_responsive_control(
 			'columns',
 			array(
-				'label'          => __( 'Columns', 'custom-backorder-pro' ),
+				'label'          => __( 'Columns', 'backorder-flow' ),
 				'type'           => Controls_Manager::SELECT,
 				'default'        => '3',
 				'tablet_default' => '2',
@@ -266,7 +266,7 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$this->add_control(
 			'column_gap',
 			array(
-				'label'      => __( 'Column Gap', 'custom-backorder-pro' ),
+				'label'      => __( 'Column Gap', 'backorder-flow' ),
 				'type'       => Controls_Manager::SLIDER,
 				'size_units' => array( 'px' ),
 				'range'      => array(
@@ -291,11 +291,11 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 		$settings = $this->get_settings_for_display();
 
 		// Get cart groups.
-		$groups = WMCBP_Cart_Grouping::get_groups();
+		$groups = WMBF_Cart_Grouping::get_groups();
 
 		if ( empty( $groups ) ) {
 			if ( \Elementor\Plugin::$instance->editor->is_edit_mode() ) {
-				echo '<p>' . esc_html__( 'Cart is empty. This widget displays cart items grouped by shipping status.', 'custom-backorder-pro' ) . '</p>';
+				echo '<p>' . esc_html__( 'Cart is empty. This widget displays cart items grouped by shipping status.', 'backorder-flow' ) . '</p>';
 			}
 			return;
 		}
@@ -438,7 +438,7 @@ class WMCBP_Widget_Cart_Backorder_Groups extends Widget_Base {
 					<p class="wc-cbs-item-quantity">
 						<?php
 						/* translators: %d: quantity */
-						printf( esc_html__( 'Qty: %d', 'custom-backorder-pro' ), (int) $quantity );
+						printf( esc_html__( 'Qty: %d', 'backorder-flow' ), (int) $quantity );
 						?>
 					</p>
 				<?php endif; ?>

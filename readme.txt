@@ -1,4 +1,4 @@
-=== Custom Backorder Pro for WooCommerce ===
+=== Backorder Flow ===
 Contributors: mrhossen
 Tags: woocommerce, backorder, stock, inventory, shipping
 Requires at least: 5.8
@@ -14,11 +14,13 @@ Advanced custom backorder status management with intelligent quantity-based disp
 
 **Take control of your backorder messaging with smart, quantity-aware displays and automatic cart grouping.**
 
-Custom Backorder Pro for WooCommerce transforms how you communicate backorder information to customers. Unlike the default WooCommerce backorder message, this plugin provides intelligent, context-aware displays that only show when relevant - either when products are out of stock or when customers order more than available inventory.
+Backorder Flow transforms how you communicate backorder information to customers. Unlike the default WooCommerce backorder message, this plugin provides intelligent, context-aware displays that only show when relevant - either when products are out of stock or when customers order more than available inventory.
 
 The plugin's standout feature is automatic cart grouping that clearly separates in-stock items from backordered items, with support for multiple backorder statuses (e.g., "Ships in 7 days", "Ships in 14 days", "Pre-order"). Customers always know exactly what will ship immediately and what they're waiting for.
 
 Perfect for stores with dropshipping, made-to-order products, pre-orders, or seasonal inventory fluctuations.
+
+Backorder Flow is built and maintained by [WPMagician](https://wpmagician.com/).
 
 = Key Features =
 
@@ -64,10 +66,10 @@ The plugin's most powerful feature is automatic cart grouping. When customers ha
 
 = Shortcodes =
 
-* `[wmcbp_backorder_status]` - Display current product's backorder status
-* `[wmcbp_backorder_groups]` - Display cart grouped by backorder status
-* `[wmcbp_backorder_products status="status-id"]` - Display products with specific backorder status
-* `[wmcbp_backorder_badge product_id="123"]` - Display backorder badge for specific product
+* `[wmbf_backorder_status]` - Display current product's backorder status
+* `[wmbf_backorder_groups]` - Display cart grouped by backorder status
+* `[wmbf_backorder_products status="status-id"]` - Display products with specific backorder status
+* `[wmbf_backorder_badge product_id="123"]` - Display backorder badge for specific product
 
 = Developer Friendly =
 
@@ -79,7 +81,7 @@ The plugin's most powerful feature is automatic cart grouping. When customers ha
 
 == Installation ==
 
-1. Upload the plugin files to `/wp-content/plugins/custom-backorder-pro/` directory, or install through WordPress plugins screen
+1. Upload the plugin files to `/wp-content/plugins/backorder-flow/` directory, or install through WordPress plugins screen
 2. Activate the plugin through the 'Plugins' screen in WordPress
 3. Go to WooCommerce > Settings > Backorder Status to configure
 4. Create your custom backorder statuses
@@ -170,15 +172,15 @@ Initial Release
 == Upgrade Notice ==
 
 = 1.0.0 =
-Initial release of Custom Backorder Pro for WooCommerce.
+Initial release of Backorder Flow.
 
 == Template Override ==
 
 To override templates, copy the template files from:
-`wp-content/plugins/custom-backorder-pro/templates/`
+`wp-content/plugins/backorder-flow/templates/`
 
 To:
-`wp-content/themes/your-theme/custom-backorder-pro/`
+`wp-content/themes/your-theme/backorder-flow/`
 
 Available templates:
 
@@ -191,11 +193,11 @@ Available templates:
 
 **Filters:**
 
-* `wmcbp_ships_now_label` - Customize "Ships Now" label
-* `wmcbp_ships_now_description` - Customize "Ships Now" description
-* `wmcbp_ships_now_color` - Customize "Ships Now" color
-* `wmcbp_cart_groups` - Modify cart groups data
+* `wmbf_ships_now_label` - Customize "Ships Now" label
+* `wmbf_ships_now_description` - Customize "Ships Now" description
+* `wmbf_ships_now_color` - Customize "Ships Now" color
+* `wmbf_cart_groups` - Modify cart groups data
 
 **Actions:**
 
-* `wmcbp_loaded` - Fires when plugin is fully loaded
+* `wmbf_loaded` - Fires when plugin is fully loaded

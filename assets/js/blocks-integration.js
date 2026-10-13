@@ -1,18 +1,18 @@
 /**
- * WooCommerce Blocks Integration for Custom Backorder Pro
+ * WooCommerce Blocks Integration for Backorder Flow
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 (function() {
 	'use strict';
 
 	// Check if data is available.
-	if ( typeof window.wmcbpBlocksData === 'undefined' ) {
+	if ( typeof window.wmbfBlocksData === 'undefined' ) {
 		return;
 	}
 
-	var wmcbpBlocksData = window.wmcbpBlocksData;
+	var wmbfBlocksData = window.wmbfBlocksData;
 	var groupsInserted = {
 		cart: false,
 		checkout: false
@@ -45,7 +45,7 @@
 	 * @return {boolean}
 	 */
 	function groupsElementExists( context ) {
-		var element = document.getElementById( 'wmcbp-shipping-groups-' + context );
+		var element = document.getElementById( 'wmbf-shipping-groups-' + context );
 		return element && element.offsetParent !== null;
 	}
 
@@ -59,16 +59,16 @@
 	function createGroupsElement( groups, context ) {
 		var container = document.createElement( 'div' );
 		container.className = 'wc-cbs-cart-groups wc-cbs-cart-groups-' + context + ' wc-cbs-blocks-groups';
-		container.id = 'wmcbp-shipping-groups-' + context;
+		container.id = 'wmbf-shipping-groups-' + context;
 
 		var title = document.createElement( 'h2' );
 		title.className = 'wc-cbs-cart-groups-title';
-		title.textContent = wmcbpBlocksData.i18n.shippingGroups || 'Shipping Groups';
+		title.textContent = wmbfBlocksData.i18n.shippingGroups || 'Shipping Groups';
 		container.appendChild( title );
 
 		var description = document.createElement( 'p' );
 		description.className = 'wc-cbs-cart-groups-description';
-		description.textContent = wmcbpBlocksData.i18n.shippingDescription || 'Your order contains items that will ship at different times:';
+		description.textContent = wmbfBlocksData.i18n.shippingDescription || 'Your order contains items that will ship at different times:';
 		container.appendChild( description );
 
 		groups.forEach( function( group ) {
@@ -151,7 +151,7 @@
 				// Quantity cell.
 				var tdQty = document.createElement( 'td' );
 				tdQty.className = 'wc-cbs-item-quantity';
-				tdQty.textContent = ( wmcbpBlocksData.i18n.qty || 'Qty:' ) + ' ' + item.quantity;
+				tdQty.textContent = ( wmbfBlocksData.i18n.qty || 'Qty:' ) + ' ' + item.quantity;
 				tr.appendChild( tdQty );
 
 				// Price cell.
@@ -257,12 +257,12 @@
 	 * @param {string} context Page context.
 	 */
 	function removeExistingGroups( context ) {
-		var existing = document.getElementById( 'wmcbp-shipping-groups-' + context );
+		var existing = document.getElementById( 'wmbf-shipping-groups-' + context );
 		if ( existing && existing.parentNode ) {
 			existing.parentNode.removeChild( existing );
 		}
 		// Also remove fallback if exists.
-		var fallback = document.getElementById( 'wmcbp-shipping-groups-fallback-' + context );
+		var fallback = document.getElementById( 'wmbf-shipping-groups-fallback-' + context );
 		if ( fallback && fallback.parentNode ) {
 			fallback.parentNode.removeChild( fallback );
 		}
@@ -334,7 +334,7 @@
 		// Use wp.apiFetch if available.
 		if ( window.wp && window.wp.apiFetch ) {
 			window.wp.apiFetch( {
-				path: 'wmcbp/v1/cart-groups',
+				path: 'wmbf/v1/cart-groups',
 				method: 'GET'
 			} ).then( function( data ) {
 				callback( null, data );
@@ -346,8 +346,8 @@
 
 		// Fallback to XMLHttpRequest.
 		var xhr = new XMLHttpRequest();
-		xhr.open( 'GET', wmcbpBlocksData.restUrl + 'cart-groups', true );
-		xhr.setRequestHeader( 'X-WP-Nonce', wmcbpBlocksData.nonce );
+		xhr.open( 'GET', wmbfBlocksData.restUrl + 'cart-groups', true );
+		xhr.setRequestHeader( 'X-WP-Nonce', wmbfBlocksData.nonce );
 		xhr.onreadystatechange = function() {
 			if ( xhr.readyState === 4 ) {
 				if ( xhr.status === 200 ) {
@@ -379,8 +379,8 @@
 		}
 
 		// Use inline data on initial load if not forcing refresh.
-		if ( ! forceRefresh && wmcbpBlocksData.inlineData && wmcbpBlocksData.inlineData.groups ) {
-			renderGroupsWithData( context, wmcbpBlocksData.inlineData );
+		if ( ! forceRefresh && wmbfBlocksData.inlineData && wmbfBlocksData.inlineData.groups ) {
+			renderGroupsWithData( context, wmbfBlocksData.inlineData );
 			return;
 		}
 
@@ -449,8 +449,8 @@
 				lastCartCount = currentCartCount;
 
 				// Debounce API refresh.
-				clearTimeout( window.wmcbpCartUpdateTimeout );
-				window.wmcbpCartUpdateTimeout = setTimeout( function() {
+				clearTimeout( window.wmbfCartUpdateTimeout );
+				window.wmbfCartUpdateTimeout = setTimeout( function() {
 					renderGroups( context, true );
 				}, 800 );
 			} else {
@@ -484,8 +484,8 @@
 								previousCartTotal = cartTotal;
 
 								// Debounce re-render.
-								clearTimeout( window.wmcbpStoreUpdateTimeout );
-								window.wmcbpStoreUpdateTimeout = setTimeout( function() {
+								clearTimeout( window.wmbfStoreUpdateTimeout );
+								window.wmbfStoreUpdateTimeout = setTimeout( function() {
 									renderGroups( context, true );
 								}, 800 );
 							}

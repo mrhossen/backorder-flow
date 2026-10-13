@@ -4,7 +4,7 @@
  *
  * Handles grouping cart items by backorder status.
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 // Exit if accessed directly.
@@ -13,14 +13,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WMCBP_Cart_Grouping class.
+ * WMBF_Cart_Grouping class.
  */
-class WMCBP_Cart_Grouping {
+class WMBF_Cart_Grouping {
 
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var WMCBP_Cart_Grouping
+	 * @var WMBF_Cart_Grouping
 	 */
 	protected static $_instance = null;
 
@@ -41,7 +41,7 @@ class WMCBP_Cart_Grouping {
 	/**
 	 * Main instance.
 	 *
-	 * @return WMCBP_Cart_Grouping
+	 * @return WMBF_Cart_Grouping
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
@@ -89,10 +89,10 @@ class WMCBP_Cart_Grouping {
 
 		// Enqueue blocks integration script.
 		wp_enqueue_script(
-			'wmcbp-blocks-integration',
-			WMCBP_ASSETS_URL . 'js/blocks-integration.js',
+			'wmbf-blocks-integration',
+			WMBF_ASSETS_URL . 'js/blocks-integration.js',
 			array( 'wp-api-fetch' ),
-			WMCBP_VERSION,
+			WMBF_VERSION,
 			true
 		);
 
@@ -101,18 +101,18 @@ class WMCBP_Cart_Grouping {
 
 		// Localize script with data.
 		wp_localize_script(
-			'wmcbp-blocks-integration',
-			'wmcbpBlocksData',
+			'wmbf-blocks-integration',
+			'wmbfBlocksData',
 			array(
-				'restUrl'    => esc_url_raw( rest_url( 'wmcbp/v1/' ) ),
+				'restUrl'    => esc_url_raw( rest_url( 'wmbf/v1/' ) ),
 				'nonce'      => wp_create_nonce( 'wp_rest' ),
 				'inlineData' => $groups_data,
 				'i18n'       => array(
-					'shippingGroups'      => __( 'Shipping Groups', 'custom-backorder-pro' ),
-					'shippingDescription' => __( 'Your order contains items that will ship at different times:', 'custom-backorder-pro' ),
-					'qty'                 => __( 'Qty:', 'custom-backorder-pro' ),
+					'shippingGroups'      => __( 'Shipping Groups', 'backorder-flow' ),
+					'shippingDescription' => __( 'Your order contains items that will ship at different times:', 'backorder-flow' ),
+					'qty'                 => __( 'Qty:', 'backorder-flow' ),
 					/* translators: %d: total quantity of items */
-					'ofTotal'             => __( 'of %d total', 'custom-backorder-pro' ),
+					'ofTotal'             => __( 'of %d total', 'backorder-flow' ),
 				),
 			)
 		);
@@ -262,7 +262,7 @@ class WMCBP_Cart_Grouping {
 	 */
 	public function register_rest_routes() {
 		register_rest_route(
-			'wmcbp/v1',
+			'wmbf/v1',
 			'/cart-groups',
 			array(
 				'methods'             => 'GET',
@@ -388,23 +388,23 @@ class WMCBP_Cart_Grouping {
 
 		// Output hidden container that JavaScript can move/show.
 		?>
-		<div id="wmcbp-shipping-groups-fallback-<?php echo esc_attr( $context ); ?>" class="wc-cbs-cart-groups wc-cbs-cart-groups-<?php echo esc_attr( $context ); ?> wc-cbs-blocks-groups wc-cbs-blocks-fallback" style="display:none;">
+		<div id="wmbf-shipping-groups-fallback-<?php echo esc_attr( $context ); ?>" class="wc-cbs-cart-groups wc-cbs-cart-groups-<?php echo esc_attr( $context ); ?> wc-cbs-blocks-groups wc-cbs-blocks-fallback" style="display:none;">
 			<h2 class="wc-cbs-cart-groups-title">
-				<?php esc_html_e( 'Shipping Groups', 'custom-backorder-pro' ); ?>
+				<?php esc_html_e( 'Shipping Groups', 'backorder-flow' ); ?>
 			</h2>
 			<p class="wc-cbs-cart-groups-description">
-				<?php esc_html_e( 'Your order contains items that will ship at different times:', 'custom-backorder-pro' ); ?>
+				<?php esc_html_e( 'Your order contains items that will ship at different times:', 'backorder-flow' ); ?>
 			</p>
 
-			<?php foreach ( $groups as $wmcbp_group ) : ?>
-				<div class="wc-cbs-cart-group" data-group-id="<?php echo esc_attr( $wmcbp_group['id'] ); ?>">
-					<div class="wc-cbs-cart-group-header" style="border-left-color: <?php echo esc_attr( $wmcbp_group['color'] ); ?>;">
-						<h3 class="wc-cbs-cart-group-title" style="color: <?php echo esc_attr( $wmcbp_group['color'] ); ?>;">
-							<?php echo esc_html( $wmcbp_group['name'] ); ?>
+			<?php foreach ( $groups as $wmbf_group ) : ?>
+				<div class="wc-cbs-cart-group" data-group-id="<?php echo esc_attr( $wmbf_group['id'] ); ?>">
+					<div class="wc-cbs-cart-group-header" style="border-left-color: <?php echo esc_attr( $wmbf_group['color'] ); ?>;">
+						<h3 class="wc-cbs-cart-group-title" style="color: <?php echo esc_attr( $wmbf_group['color'] ); ?>;">
+							<?php echo esc_html( $wmbf_group['name'] ); ?>
 						</h3>
-						<?php if ( ! empty( $wmcbp_group['description'] ) ) : ?>
+						<?php if ( ! empty( $wmbf_group['description'] ) ) : ?>
 							<p class="wc-cbs-cart-group-description">
-								<?php echo esc_html( $wmcbp_group['description'] ); ?>
+								<?php echo esc_html( $wmbf_group['description'] ); ?>
 							</p>
 						<?php endif; ?>
 					</div>
@@ -412,23 +412,23 @@ class WMCBP_Cart_Grouping {
 					<div class="wc-cbs-cart-group-items">
 						<table class="wc-cbs-cart-group-table">
 							<tbody>
-								<?php foreach ( $wmcbp_group['items'] as $wmcbp_item ) : ?>
+								<?php foreach ( $wmbf_group['items'] as $wmbf_item ) : ?>
 									<?php
-									$wmcbp_product    = $wmcbp_item['product'];
-									$wmcbp_quantity   = $wmcbp_item['quantity'];
-									$wmcbp_is_partial = $wmcbp_item['is_partial'];
+									$wmbf_product    = $wmbf_item['product'];
+									$wmbf_quantity   = $wmbf_item['quantity'];
+									$wmbf_is_partial = $wmbf_item['is_partial'];
 									?>
-									<tr class="wc-cbs-cart-group-item <?php echo $wmcbp_is_partial ? 'wc-cbs-partial-item' : ''; ?>">
+									<tr class="wc-cbs-cart-group-item <?php echo $wmbf_is_partial ? 'wc-cbs-partial-item' : ''; ?>">
 										<td class="wc-cbs-item-thumbnail">
-											<?php echo wp_kses_post( $wmcbp_product->get_image( 'thumbnail' ) ); ?>
+											<?php echo wp_kses_post( $wmbf_product->get_image( 'thumbnail' ) ); ?>
 										</td>
 										<td class="wc-cbs-item-name">
-											<strong><?php echo esc_html( $wmcbp_product->get_name() ); ?></strong>
-											<?php if ( $wmcbp_is_partial ) : ?>
+											<strong><?php echo esc_html( $wmbf_product->get_name() ); ?></strong>
+											<?php if ( $wmbf_is_partial ) : ?>
 												<span class="wc-cbs-partial-badge">
 													<?php
 													/* translators: %1$d: quantity from this group, %2$d: total quantity */
-													printf( esc_html__( '(%1$d of %2$d total)', 'custom-backorder-pro' ), (int) $wmcbp_quantity, (int) $wmcbp_item['total_qty'] );
+													printf( esc_html__( '(%1$d of %2$d total)', 'backorder-flow' ), (int) $wmbf_quantity, (int) $wmbf_item['total_qty'] );
 													?>
 												</span>
 											<?php endif; ?>
@@ -436,14 +436,14 @@ class WMCBP_Cart_Grouping {
 										<td class="wc-cbs-item-quantity">
 											<?php
 											/* translators: %d: quantity */
-											printf( esc_html__( 'Qty: %d', 'custom-backorder-pro' ), (int) $wmcbp_quantity );
+											printf( esc_html__( 'Qty: %d', 'backorder-flow' ), (int) $wmbf_quantity );
 											?>
 										</td>
 										<td class="wc-cbs-item-price">
 											<?php
-											if ( $wmcbp_quantity > 0 && $wmcbp_item['total_qty'] > 0 ) {
-												$wmcbp_item_total = ( $wmcbp_item['cart_item']['line_total'] / $wmcbp_item['total_qty'] ) * $wmcbp_quantity;
-												echo wp_kses_post( wc_price( $wmcbp_item_total ) );
+											if ( $wmbf_quantity > 0 && $wmbf_item['total_qty'] > 0 ) {
+												$wmbf_item_total = ( $wmbf_item['cart_item']['line_total'] / $wmbf_item['total_qty'] ) * $wmbf_quantity;
+												echo wp_kses_post( wc_price( $wmbf_item_total ) );
 											}
 											?>
 										</td>
@@ -458,12 +458,12 @@ class WMCBP_Cart_Grouping {
 
 		<script type="text/javascript">
 		(function() {
-			var fallback = document.getElementById('wmcbp-shipping-groups-fallback-<?php echo esc_js( $context ); ?>');
+			var fallback = document.getElementById('wmbf-shipping-groups-fallback-<?php echo esc_js( $context ); ?>');
 			if (!fallback) return;
 
 			function tryInsertFallback() {
 				// Check if JS-rendered version exists.
-				var jsRendered = document.getElementById('wmcbp-shipping-groups-<?php echo esc_js( $context ); ?>');
+				var jsRendered = document.getElementById('wmbf-shipping-groups-<?php echo esc_js( $context ); ?>');
 				if (jsRendered) {
 					// Remove fallback since JS version is working.
 					fallback.parentNode.removeChild(fallback);
@@ -478,7 +478,7 @@ class WMCBP_Cart_Grouping {
 					if (target) {
 						// Clone and insert.
 						var clone = fallback.cloneNode(true);
-						clone.id = 'wmcbp-shipping-groups-<?php echo esc_js( $context ); ?>';
+						clone.id = 'wmbf-shipping-groups-<?php echo esc_js( $context ); ?>';
 						clone.style.display = '';
 						clone.classList.remove('wc-cbs-blocks-fallback');
 
@@ -577,7 +577,7 @@ class WMCBP_Cart_Grouping {
 			return $item_data;
 		}
 
-		$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 		if ( $status ) {
 			$item_data['backorder_status'] = $status;
 		}
@@ -602,14 +602,14 @@ class WMCBP_Cart_Grouping {
 		}
 
 		$groups   = array();
-		$statuses = WMCBP_Admin_Settings::instance()->get_statuses();
+		$statuses = WMBF_Admin_Settings::instance()->get_statuses();
 
 		// Create "Ships Now" group.
 		$groups['ships_now'] = array(
 			'id'          => 'ships_now',
-			'name'        => apply_filters( 'wmcbp_ships_now_label', __( 'Ships Now', 'custom-backorder-pro' ) ),
-			'description' => apply_filters( 'wmcbp_ships_now_description', __( 'These items are in stock and will ship immediately.', 'custom-backorder-pro' ) ),
-			'color'       => apply_filters( 'wmcbp_ships_now_color', '#4caf50' ),
+			'name'        => apply_filters( 'wmbf_ships_now_label', __( 'Ships Now', 'backorder-flow' ) ),
+			'description' => apply_filters( 'wmbf_ships_now_description', __( 'These items are in stock and will ship immediately.', 'backorder-flow' ) ),
+			'color'       => apply_filters( 'wmbf_ships_now_color', '#4caf50' ),
 			'priority'    => 0,
 			'items'       => array(),
 		);
@@ -638,8 +638,8 @@ class WMCBP_Cart_Grouping {
 			}
 
 			// Get in-stock and backorder quantities.
-			$instock_qty   = WMCBP_Frontend_Display::get_instock_quantity( $product, $quantity );
-			$backorder_qty = WMCBP_Frontend_Display::get_backorder_quantity( $product, $quantity );
+			$instock_qty   = WMBF_Frontend_Display::get_instock_quantity( $product, $quantity );
+			$backorder_qty = WMBF_Frontend_Display::get_backorder_quantity( $product, $quantity );
 
 			// Add to "Ships Now" group if there's in-stock quantity.
 			if ( $instock_qty > 0 ) {
@@ -655,7 +655,7 @@ class WMCBP_Cart_Grouping {
 
 			// Add to backorder group if there's backorder quantity.
 			if ( $backorder_qty > 0 ) {
-				$backorder_status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+				$backorder_status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 				if ( $backorder_status && isset( $groups[ $backorder_status['id'] ] ) ) {
 					$groups[ $backorder_status['id'] ]['items'][] = array(
@@ -688,7 +688,7 @@ class WMCBP_Cart_Grouping {
 			}
 		);
 
-		return apply_filters( 'wmcbp_cart_groups', $groups );
+		return apply_filters( 'wmbf_cart_groups', $groups );
 	}
 
 	/**
@@ -698,7 +698,7 @@ class WMCBP_Cart_Grouping {
 	 * @param string $context Display context (cart or checkout).
 	 */
 	private function render_cart_groups( $groups, $context = 'cart' ) {
-		$template_path = WMCBP_TEMPLATES_DIR . 'cart-groups.php';
+		$template_path = WMBF_TEMPLATES_DIR . 'cart-groups.php';
 
 		if ( file_exists( $template_path ) ) {
 			include $template_path;
@@ -718,10 +718,10 @@ class WMCBP_Cart_Grouping {
 		?>
 		<div class="wc-cbs-cart-groups wc-cbs-cart-groups-<?php echo esc_attr( $context ); ?>">
 			<h2 class="wc-cbs-cart-groups-title">
-				<?php esc_html_e( 'Shipping Groups', 'custom-backorder-pro' ); ?>
+				<?php esc_html_e( 'Shipping Groups', 'backorder-flow' ); ?>
 			</h2>
 			<p class="wc-cbs-cart-groups-description">
-				<?php esc_html_e( 'Your order contains items that will ship at different times:', 'custom-backorder-pro' ); ?>
+				<?php esc_html_e( 'Your order contains items that will ship at different times:', 'backorder-flow' ); ?>
 			</p>
 
 			<?php foreach ( $groups as $group ) : ?>
@@ -769,7 +769,7 @@ class WMCBP_Cart_Grouping {
 												<span class="wc-cbs-partial-badge">
 													<?php
 													/* translators: %1$d: quantity from this group, %2$d: total quantity */
-													printf( esc_html__( '(%1$d of %2$d total)', 'custom-backorder-pro' ), (int) $quantity, (int) $item['total_qty'] );
+													printf( esc_html__( '(%1$d of %2$d total)', 'backorder-flow' ), (int) $quantity, (int) $item['total_qty'] );
 													?>
 												</span>
 											<?php endif; ?>
@@ -777,7 +777,7 @@ class WMCBP_Cart_Grouping {
 										<td class="wc-cbs-item-quantity">
 											<?php
 											/* translators: %d: quantity */
-											printf( esc_html__( 'Qty: %d', 'custom-backorder-pro' ), (int) $quantity );
+											printf( esc_html__( 'Qty: %d', 'backorder-flow' ), (int) $quantity );
 											?>
 										</td>
 										<td class="wc-cbs-item-price">

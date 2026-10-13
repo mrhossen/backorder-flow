@@ -4,7 +4,7 @@
  *
  * Handles Elementor widgets registration and integration.
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 // Exit if accessed directly.
@@ -13,21 +13,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WMCBP_Elementor_Integration class.
+ * WMBF_Elementor_Integration class.
  */
-class WMCBP_Elementor_Integration {
+class WMBF_Elementor_Integration {
 
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var WMCBP_Elementor_Integration
+	 * @var WMBF_Elementor_Integration
 	 */
 	protected static $_instance = null;
 
 	/**
 	 * Main instance.
 	 *
-	 * @return WMCBP_Elementor_Integration
+	 * @return WMBF_Elementor_Integration
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
@@ -68,7 +68,7 @@ class WMCBP_Elementor_Integration {
 		$elements_manager->add_category(
 			'wc-cbs',
 			array(
-				'title' => __( 'WPMagician', 'custom-backorder-pro' ),
+				'title' => __( 'WPMagician', 'backorder-flow' ),
 				'icon'  => 'fa fa-plug',
 			)
 		);
@@ -86,24 +86,24 @@ class WMCBP_Elementor_Integration {
 		}
 
 		// Load widget classes.
-		require_once WMCBP_ELEMENTOR_DIR . 'widgets/class-widget-product-backorder-status.php';
-		require_once WMCBP_ELEMENTOR_DIR . 'widgets/class-widget-cart-backorder-groups.php';
-		require_once WMCBP_ELEMENTOR_DIR . 'widgets/class-widget-backorder-products.php';
-		require_once WMCBP_ELEMENTOR_DIR . 'widgets/class-widget-backorder-badge.php';
+		require_once WMBF_ELEMENTOR_DIR . 'widgets/class-widget-product-backorder-status.php';
+		require_once WMBF_ELEMENTOR_DIR . 'widgets/class-widget-cart-backorder-groups.php';
+		require_once WMBF_ELEMENTOR_DIR . 'widgets/class-widget-backorder-products.php';
+		require_once WMBF_ELEMENTOR_DIR . 'widgets/class-widget-backorder-badge.php';
 
 		// Register widgets - compatible with both old and new Elementor versions
 		if ( method_exists( $widgets_manager, 'register_widget_type' ) ) {
 			// Elementor 3.5.0+
-			$widgets_manager->register_widget_type( new WMCBP_Widget_Product_Backorder_Status() );
-			$widgets_manager->register_widget_type( new WMCBP_Widget_Cart_Backorder_Groups() );
-			$widgets_manager->register_widget_type( new WMCBP_Widget_Backorder_Products() );
-			$widgets_manager->register_widget_type( new WMCBP_Widget_Backorder_Badge() );
+			$widgets_manager->register_widget_type( new WMBF_Widget_Product_Backorder_Status() );
+			$widgets_manager->register_widget_type( new WMBF_Widget_Cart_Backorder_Groups() );
+			$widgets_manager->register_widget_type( new WMBF_Widget_Backorder_Products() );
+			$widgets_manager->register_widget_type( new WMBF_Widget_Backorder_Badge() );
 		} elseif ( method_exists( $widgets_manager, 'register' ) ) {
 			// Older Elementor versions
-			$widgets_manager->register( new WMCBP_Widget_Product_Backorder_Status() );
-			$widgets_manager->register( new WMCBP_Widget_Cart_Backorder_Groups() );
-			$widgets_manager->register( new WMCBP_Widget_Backorder_Products() );
-			$widgets_manager->register( new WMCBP_Widget_Backorder_Badge() );
+			$widgets_manager->register( new WMBF_Widget_Product_Backorder_Status() );
+			$widgets_manager->register( new WMBF_Widget_Cart_Backorder_Groups() );
+			$widgets_manager->register( new WMBF_Widget_Backorder_Products() );
+			$widgets_manager->register( new WMBF_Widget_Backorder_Badge() );
 		}
 	}
 
@@ -113,9 +113,9 @@ class WMCBP_Elementor_Integration {
 	public function enqueue_widget_styles() {
 		wp_enqueue_style(
 			'wc-cbs-elementor-widgets',
-			WMCBP_ASSETS_URL . 'css/elementor-widgets.css',
+			WMBF_ASSETS_URL . 'css/elementor-widgets.css',
 			array(),
-			WMCBP_VERSION
+			WMBF_VERSION
 		);
 	}
 
@@ -125,9 +125,9 @@ class WMCBP_Elementor_Integration {
 	public function enqueue_widget_scripts() {
 		wp_register_script(
 			'wc-cbs-elementor-widgets',
-			WMCBP_ASSETS_URL . 'js/elementor-widgets.js',
+			WMBF_ASSETS_URL . 'js/elementor-widgets.js',
 			array( 'jquery' ),
-			WMCBP_VERSION,
+			WMBF_VERSION,
 			true
 		);
 	}
@@ -143,13 +143,13 @@ class WMCBP_Elementor_Integration {
 			return;
 		}
 
-		require_once WMCBP_ELEMENTOR_DIR . 'dynamic-tags/class-backorder-status-tag.php';
+		require_once WMBF_ELEMENTOR_DIR . 'dynamic-tags/class-backorder-status-tag.php';
 
 		// Register tag - compatible with both old and new Elementor versions
 		if ( method_exists( $dynamic_tags_manager, 'register_tag' ) ) {
-			$dynamic_tags_manager->register_tag( new WMCBP_Backorder_Status_Tag() );
+			$dynamic_tags_manager->register_tag( new WMBF_Backorder_Status_Tag() );
 		} elseif ( method_exists( $dynamic_tags_manager, 'register' ) ) {
-			$dynamic_tags_manager->register( new WMCBP_Backorder_Status_Tag() );
+			$dynamic_tags_manager->register( new WMBF_Backorder_Status_Tag() );
 		}
 	}
 }

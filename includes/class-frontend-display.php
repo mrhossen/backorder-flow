@@ -4,7 +4,7 @@
  *
  * Handles displaying backorder status on frontend.
  *
- * @package Custom_Backorder_Pro
+ * @package Backorder_Flow
  */
 
 // Exit if accessed directly.
@@ -13,21 +13,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * WMCBP_Frontend_Display class.
+ * WMBF_Frontend_Display class.
  */
-class WMCBP_Frontend_Display {
+class WMBF_Frontend_Display {
 
 	/**
 	 * The single instance of the class.
 	 *
-	 * @var WMCBP_Frontend_Display
+	 * @var WMBF_Frontend_Display
 	 */
 	protected static $_instance = null;
 
 	/**
 	 * Main instance.
 	 *
-	 * @return WMCBP_Frontend_Display
+	 * @return WMBF_Frontend_Display
 	 */
 	public static function instance() {
 		if ( is_null( self::$_instance ) ) {
@@ -89,7 +89,7 @@ class WMCBP_Frontend_Display {
 			return;
 		}
 
-		$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 		if ( ! $status ) {
 			return;
@@ -144,7 +144,7 @@ class WMCBP_Frontend_Display {
 			return;
 		}
 
-		$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 		if ( ! $status ) {
 			return;
@@ -173,8 +173,8 @@ class WMCBP_Frontend_Display {
 		$content = $post->post_content;
 
 		// Check for shortcodes
-		if ( has_shortcode( $content, 'wmcbp_backorder_status' ) ||
-		     has_shortcode( $content, 'wmcbp_backorder_badge' ) ) {
+		if ( has_shortcode( $content, 'wmbf_backorder_status' ) ||
+		     has_shortcode( $content, 'wmbf_backorder_badge' ) ) {
 			return true;
 		}
 
@@ -266,7 +266,7 @@ class WMCBP_Frontend_Display {
 			return $product_name;
 		}
 
-		$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 		if ( ! $status ) {
 			return $product_name;
@@ -312,7 +312,7 @@ class WMCBP_Frontend_Display {
 		}
 
 		// Check if this product has a custom backorder status
-		$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 		// If it has a custom status and we're showing it, hide the default WooCommerce message
 		if ( $status && $this->should_display_backorder_status( $product ) ) {
@@ -336,7 +336,7 @@ class WMCBP_Frontend_Display {
 		}
 
 		// Check if this product has a custom backorder status
-		$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 
 		// If it has a custom status and we're showing it, suppress the default HTML
 		if ( $status && $this->should_display_backorder_status( $product ) ) {
@@ -362,7 +362,7 @@ class WMCBP_Frontend_Display {
 		}
 
 		// Check if product has a custom backorder status assigned.
-		$status = WMCBP_Product_Meta::get_product_backorder_status( $product );
+		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
 		if ( ! $status ) {
 			return false;
 		}
@@ -386,7 +386,7 @@ class WMCBP_Frontend_Display {
 	 * @param string $context Display context (shop, single, cart, checkout).
 	 */
 	private function render_backorder_badge( $status, $context = 'single' ) {
-		$template_path = WMCBP_TEMPLATES_DIR . 'single-product-status.php';
+		$template_path = WMBF_TEMPLATES_DIR . 'single-product-status.php';
 
 		if ( file_exists( $template_path ) ) {
 			include $template_path;
@@ -426,7 +426,7 @@ class WMCBP_Frontend_Display {
 			return null;
 		}
 
-		return WMCBP_Product_Meta::get_product_backorder_status( $product );
+		return WMBF_Product_Meta::get_product_backorder_status( $product );
 	}
 
 	/**
@@ -623,11 +623,11 @@ class WMCBP_Frontend_Display {
 			var currentVariation = null;
 
 			function shouldShowBackorderMessage(variation, quantity) {
-				if (!variation || !variation.wmcbp_backorder_status) {
+				if (!variation || !variation.wmbf_backorder_status) {
 					return false;
 				}
 
-				var status = variation.wmcbp_backorder_status;
+				var status = variation.wmbf_backorder_status;
 
 				// Always show if backorder status exists and backorders allowed
 				if (!status.managing_stock) {
@@ -647,7 +647,7 @@ class WMCBP_Frontend_Display {
 				var placeholder = document.querySelector('.wc-cbs-variable-placeholder');
 				if (!placeholder) return;
 
-				if (!currentVariation || !currentVariation.wmcbp_backorder_status) {
+				if (!currentVariation || !currentVariation.wmbf_backorder_status) {
 					placeholder.style.display = 'none';
 					return;
 				}
@@ -657,7 +657,7 @@ class WMCBP_Frontend_Display {
 				var quantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
 
 				if (shouldShowBackorderMessage(currentVariation, quantity)) {
-					var status = currentVariation.wmcbp_backorder_status;
+					var status = currentVariation.wmbf_backorder_status;
 					var color = status.color || '#ff9800';
 
 					var html = '<span class="wc-cbs-backorder-badge-icon" style="background-color: ' + color + ';"></span>';
