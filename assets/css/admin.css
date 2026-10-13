@@ -1,0 +1,193 @@
+/**
+ * Admin Styles
+ *
+ * @package Custom_Backorder_Pro
+ */
+
+/* Settings Page */
+.wc-cbs-settings-wrap {
+	max-width: 1200px;
+}
+
+.wc-cbs-actions {
+	margin: 20px 0;
+}
+
+.wc-cbs-actions .button {
+	margin-right: 10px;
+}
+
+.wc-cbs-statuses-list {
+	margin-top: 20px;
+}
+
+.wc-cbs-statuses-table {
+	margin-top: 20px;
+}
+
+.wc-cbs-statuses-table tbody tr {
+	cursor: move;
+}
+
+.wc-cbs-statuses-table tbody tr.ui-sortable-helper {
+	background: #f9f9f9;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.wc-cbs-col-sort {
+	width: 50px;
+	text-align: center;
+}
+
+.wc-cbs-col-name {
+	width: 20%;
+}
+
+.wc-cbs-col-description {
+	width: 30%;
+}
+
+.wc-cbs-col-color {
+	width: 80px;
+	text-align: center;
+}
+
+.wc-cbs-col-priority {
+	width: 80px;
+	text-align: center;
+}
+
+.wc-cbs-col-enabled {
+	width: 80px;
+	text-align: center;
+}
+
+.wc-cbs-col-actions {
+	width: 150px;
+	text-align: center;
+}
+
+.wc-cbs-color-preview {
+	display: inline-block;
+	width: 30px;
+	height: 30px;
+	border-radius: 3px;
+	border: 1px solid #ddd;
+	vertical-align: middle;
+}
+
+.wc-cbs-no-statuses {
+	padding: 20px;
+	background: #f9f9f9;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	text-align: center;
+}
+
+/* Modal */
+.wc-cbs-modal {
+	display: none;
+	position: fixed;
+	z-index: 100000;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	overflow: auto;
+	background-color: rgba(0,0,0,0.4);
+}
+
+.wc-cbs-modal-content {
+	background-color: #fefefe;
+	margin: 5% auto;
+	padding: 20px;
+	border: 1px solid #888;
+	width: 600px;
+	max-width: 90%;
+	border-radius: 5px;
+	box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.wc-cbs-modal-close {
+	color: #aaa;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
+	cursor: pointer;
+	line-height: 20px;
+}
+
+.wc-cbs-modal-close:hover,
+.wc-cbs-modal-close:focus {
+	color: #000;
+}
+
+.wc-cbs-modal-title {
+	margin-top: 0;
+}
+
+#wc-cbs-status-form .form-field {
+	margin-bottom: 15px;
+}
+
+#wc-cbs-status-form .form-field label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: 600;
+}
+
+#wc-cbs-status-form .form-field input[type="text"],
+#wc-cbs-status-form .form-field input[type="number"],
+#wc-cbs-status-form .form-field textarea {
+	width: 100%;
+}
+
+#wc-cbs-status-form .form-field .description {
+	display: block;
+	margin-top: 5px;
+	font-size: 12px;
+	color: #666;
+}
+
+.required {
+	color: red;
+}
+
+/* Product Edit Page */
+.wc-cbs-variation-backorder-status {
+	width: 100%;
+}
+
+/* Order Admin */
+.wc-cbs-order-backorder-info {
+	margin-top: 20px;
+	padding: 15px;
+	background: #f9f9f9;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+}
+
+.wc-cbs-order-backorder-info h3 {
+	margin-top: 0;
+}
+
+.wc-cbs-order-group {
+	margin-bottom: 15px;
+	padding: 10px;
+	border-left: 4px solid #ff9800;
+	background: #fff;
+}
+
+.wc-cbs-order-group h4 {
+	margin: 0 0 10px;
+}
+
+.wc-cbs-order-group ul {
+	margin: 0;
+	padding-left: 20px;
+}
+
+/* Admin Column */
+.column-backorder_status {
+	width: 100px;
+}

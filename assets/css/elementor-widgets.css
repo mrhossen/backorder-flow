@@ -1,0 +1,109 @@
+/**
+ * Elementor Widgets Styles
+ *
+ * @package Custom_Backorder_Pro
+ */
+
+/* Product Backorder Status Widget */
+.wc-cbs-elementor-widget.wc-cbs-backorder-badge {
+	display: flex;
+	align-items: center;
+}
+
+.wc-cbs-style-banner .wc-cbs-backorder-badge-content {
+	width: 100%;
+}
+
+.wc-cbs-style-text {
+	background: none;
+	border: none;
+	padding: 0;
+}
+
+.wc-cbs-style-text .wc-cbs-backorder-badge-title {
+	display: inline;
+}
+
+/* Cart Backorder Groups Widget */
+.wc-cbs-elementor-widget.wc-cbs-cart-groups {
+	/* Inherits styles from frontend.css */
+}
+
+.wc-cbs-layout-cards .wc-cbs-cart-group-cards {
+	display: grid;
+}
+
+/* Backorder Products Widget */
+.wc-cbs-products.wc-cbs-elementor-widget .wc-cbs-products-grid {
+	display: grid;
+}
+
+/* Backorder Badge Widget */
+.wc-cbs-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 8px 16px;
+	border-radius: 3px;
+	font-weight: 600;
+	transition: all 0.3s ease;
+}
+
+.wc-cbs-badge-flat {
+	border-radius: 0;
+}
+
+.wc-cbs-badge-rounded {
+	border-radius: 5px;
+}
+
+.wc-cbs-badge-pill {
+	border-radius: 50px;
+}
+
+.wc-cbs-badge-small {
+	padding: 5px 10px;
+	font-size: 12px;
+}
+
+.wc-cbs-badge-medium {
+	padding: 8px 16px;
+	font-size: 14px;
+}
+
+.wc-cbs-badge-large {
+	padding: 12px 24px;
+	font-size: 16px;
+}
+
+.wc-cbs-badge-icon {
+	margin-right: 8px;
+	display: inline-flex;
+	align-items: center;
+}
+
+.wc-cbs-badge-text {
+	display: inline-block;
+}
+
+.wc-cbs-badge-animated {
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.wc-cbs-badge-animated:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Stock Quantity */
+.wc-cbs-stock-quantity {
+	display: block;
+	margin-top: 5px;
+	font-size: 12px;
+	font-weight: normal;
+	opacity: 0.8;
+}
+
+/* Elementor Editor */
+.elementor-editor-active .wc-cbs-elementor-widget {
+	min-height: 50px;
+}

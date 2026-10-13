@@ -1,0 +1,585 @@
+/**
+ * Frontend Styles
+ *
+ * @package Custom_Backorder_Pro
+ */
+
+/* Backorder Badge */
+.wc-cbs-backorder-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 10px 15px;
+	margin: 10px 0;
+	border-left: 4px solid #ff9800;
+	background: #fff3e0;
+	border-radius: 3px;
+	font-size: 14px;
+}
+
+.wc-cbs-backorder-badge-shop {
+	margin-top: 10px;
+}
+
+.wc-cbs-backorder-badge-single {
+	margin: 15px 0;
+}
+
+.wc-cbs-backorder-badge-icon {
+	display: inline-block;
+	width: 25px;
+	height: 25px;
+	border-radius: 50%;
+	margin-right: 10px;
+	flex-shrink: 0;
+}
+
+.wc-cbs-backorder-badge-content {
+	flex: 1;
+}
+
+.wc-cbs-backorder-badge-title {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 3px;
+}
+
+.wc-cbs-backorder-badge-description {
+	display: block;
+	font-size: 13px;
+	color: #666;
+}
+
+/* Cart Groups */
+.wc-cbs-cart-groups {
+	margin: 30px 0;
+	padding: 20px;
+	background: #f9f9f9;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	clear: both;
+	width: 100%;
+	display: block !important;
+	box-sizing: border-box;
+}
+
+/* Ensure visibility on all pages */
+.woocommerce-cart .wc-cbs-cart-groups,
+.woocommerce-checkout .wc-cbs-cart-groups,
+.wp-block-woocommerce-cart .wc-cbs-cart-groups,
+.wp-block-woocommerce-checkout .wc-cbs-cart-groups {
+	display: block !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+}
+
+.wc-cbs-cart-groups-title {
+	margin-top: 0;
+	margin-bottom: 10px;
+	font-size: 20px;
+}
+
+.wc-cbs-cart-groups-description {
+	margin-bottom: 20px;
+	color: #666;
+}
+
+.wc-cbs-cart-group {
+	margin-bottom: 20px;
+	background: #fff;
+	border-radius: 5px;
+	overflow: hidden;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.wc-cbs-order-group h3 {
+    font-size: 20px;
+}
+
+.wc-cbs-cart-group-items .wc-cbs-cart-group-table {
+    margin-bottom: 0;
+}
+
+.wc-cbs-cart-group:last-child {
+	margin-bottom: 0;
+}
+
+.wc-cbs-cart-group-header {
+	padding: 5px 5px;
+	border-left: 5px solid #ff9800;
+	background: #fafafa;
+}
+
+.wc-cbs-cart-group-title {
+	margin: 0 0 5px;
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.wc-cbs-cart-group-description {
+	margin: 0;
+	font-size: 14px;
+	color: #666;
+}
+
+.wc-cbs-cart-group-items {
+	padding: 10px 10px;
+}
+
+.wc-cbs-cart-group-table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.wc-cbs-cart-group-table tr {
+	border-bottom: 1px solid #eee;
+}
+
+.wc-cbs-cart-group-table tr:last-child {
+	border-bottom: none;
+}
+
+.wc-cbs-cart-group-table td {
+	padding: 5px 10px;
+	vertical-align: middle;
+}
+
+.wc-cbs-item-thumbnail {
+	width: 60px;
+}
+
+.wc-cbs-item-thumbnail img {
+	display: block;
+	width: 50px;
+	height: 50px;
+	object-fit: cover;
+	border-radius: 3px;
+}
+
+.wc-cbs-item-name {
+	font-weight: 600;
+}
+
+.wc-cbs-item-variation {
+	font-size: 12px;
+	color: #666;
+	margin-top: 5px;
+}
+
+.wc-cbs-partial-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	background: #e3f2fd;
+	border-radius: 3px;
+	font-size: 12px;
+	color: #1976d2;
+}
+
+.wc-cbs-item-quantity {
+	text-align: center;
+	width: 80px;
+}
+
+.wc-cbs-item-price {
+	text-align: right;
+	width: 100px;
+	font-weight: 600;
+}
+
+/* List Layout */
+.wc-cbs-cart-group-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.wc-cbs-cart-group-list .wc-cbs-cart-group-item {
+	display: flex;
+	align-items: center;
+	padding: 10px 0;
+	border-bottom: 1px solid #eee;
+}
+
+.wc-cbs-cart-group-list .wc-cbs-cart-group-item:last-child {
+	border-bottom: none;
+}
+
+.wc-cbs-cart-group-list .wc-cbs-item-thumbnail {
+	margin-right: 15px;
+}
+
+.wc-cbs-cart-group-list .wc-cbs-item-name {
+	flex: 1;
+}
+
+.wc-cbs-cart-group-list .wc-cbs-item-quantity {
+	margin: 0 15px;
+}
+
+/* Cards Layout */
+.wc-cbs-cart-group-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 15px;
+}
+
+.wc-cbs-item-card {
+	border: 1px solid #eee;
+	border-radius: 5px;
+	overflow: hidden;
+	transition: box-shadow 0.3s ease;
+}
+
+.wc-cbs-item-card:hover {
+	box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.wc-cbs-item-card .wc-cbs-item-thumbnail {
+	width: 100%;
+	height: 200px;
+}
+
+.wc-cbs-item-card .wc-cbs-item-thumbnail img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.wc-cbs-item-card .wc-cbs-item-details {
+	padding: 15px;
+}
+
+.wc-cbs-item-card .wc-cbs-item-name {
+	margin: 0 0 10px;
+	font-size: 16px;
+}
+
+.wc-cbs-item-card .wc-cbs-item-quantity,
+.wc-cbs-item-card .wc-cbs-item-price {
+	margin: 5px 0;
+}
+
+/* Shortcodes */
+.wc-cbs-shortcode-badge {
+	display: inline-flex;
+}
+
+.wc-cbs-shortcode-groups {
+	margin: 20px 0;
+}
+
+.wc-cbs-no-items,
+.wc-cbs-no-products {
+	padding: 20px;
+	text-align: center;
+	background: #f9f9f9;
+	border: 1px solid #ddd;
+	border-radius: 3px;
+}
+
+.wc-cbs-error {
+	padding: 15px;
+	background: #ffebee;
+	border: 1px solid #f44336;
+	border-radius: 3px;
+	color: #c62828;
+}
+
+/* Products Grid */
+.wc-cbs-products {
+	margin: 20px 0;
+}
+
+.wc-cbs-products-grid {
+	display: grid;
+	gap: 20px;
+}
+
+.wc-cbs-product-item {
+	border: 1px solid #eee;
+	border-radius: 5px;
+	padding: 15px;
+	transition: box-shadow 0.3s ease;
+}
+
+.wc-cbs-product-item:hover {
+	box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.wc-cbs-product-image {
+	position: relative;
+	margin-bottom: 15px;
+}
+
+.wc-cbs-product-image img {
+	width: 100%;
+	height: auto;
+	border-radius: 3px;
+}
+
+.wc-cbs-product-badge {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	padding: 5px 10px;
+	background: #ff9800;
+	color: #fff;
+	font-size: 12px;
+	font-weight: 600;
+	border-radius: 3px;
+}
+
+.wc-cbs-product-title {
+	margin: 0 0 10px;
+	font-size: 16px;
+}
+
+.wc-cbs-product-title a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.wc-cbs-product-title a:hover {
+	color: #1976d2;
+}
+
+.wc-cbs-product-price {
+	margin: 10px 0;
+	font-weight: 600;
+}
+
+.wc-cbs-product-add-to-cart {
+	margin-top: 10px;
+}
+
+/* Hide default WooCommerce stock availability on single product pages when custom backorder status is shown */
+.single-product .wc-cbs-backorder-badge ~ .stock,
+.single-product .product .wc-cbs-backorder-badge ~ .stock,
+body.single-product p.stock,
+body.single-product .stock.in-stock,
+body.single-product .stock.out-of-stock,
+body.single-product .stock.available-on-backorder {
+	display: none !important;
+}
+
+/* Alternative method - hide stock on single product when our badge exists */
+body.single-product:has(.wc-cbs-backorder-badge) p.stock {
+	display: none !important;
+}
+
+/* Hide single product default badge when Elementor widget or shortcode is present */
+.elementor-widget-wc-cbs-product-backorder-status ~ .wc-cbs-backorder-badge-single,
+.elementor-widget-wc-cbs-backorder-badge ~ .wc-cbs-backorder-badge-single {
+	display: none !important;
+}
+
+/* If there are Elementor widgets on page, hide all default single product badges */
+body:has(.elementor-widget-wc-cbs-product-backorder-status) .wc-cbs-backorder-badge-single,
+body:has(.elementor-widget-wc-cbs-backorder-badge) .wc-cbs-backorder-badge-single {
+	display: none !important;
+}
+
+/* Also hide via the default badge class for extra safety */
+body:has(.elementor-widget-wc-cbs-product-backorder-status) .wc-cbs-default-badge,
+body:has(.elementor-widget-wc-cbs-backorder-badge) .wc-cbs-default-badge {
+	display: none !important;
+}
+
+/* WooCommerce Blocks Integration */
+.wc-cbs-blocks-groups {
+	margin: 20px 0;
+	padding: 20px;
+	background: #f9f9f9;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	clear: both;
+}
+
+/* Cart Block specific styles */
+.wp-block-woocommerce-cart .wc-cbs-blocks-groups,
+.wc-block-cart .wc-cbs-blocks-groups {
+	margin: 24px 0;
+}
+
+/* Checkout Block specific styles */
+.wp-block-woocommerce-checkout .wc-cbs-blocks-groups,
+.wc-block-checkout .wc-cbs-blocks-groups {
+	margin: 16px 0;
+	background: #fff;
+	border: 1px solid #dcdcde;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-cart-groups-title {
+	font-size: 18px;
+	font-weight: 600;
+	margin: 0 0 8px;
+	color: #1e1e1e;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-cart-groups-description {
+	font-size: 14px;
+	color: #757575;
+	margin: 0 0 16px;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-cart-group {
+	margin-bottom: 16px;
+	background: #fff;
+	border: 1px solid #e0e0e0;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-cart-group:last-child {
+	margin-bottom: 0;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-cart-group-header {
+	padding: 12px 16px;
+	background: #fafafa;
+	border-left-width: 4px;
+	border-left-style: solid;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-cart-group-title {
+	font-size: 15px;
+	font-weight: 600;
+	margin: 0 0 4px;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-cart-group-description {
+	font-size: 13px;
+	color: #757575;
+	margin: 0;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-cart-group-items {
+	padding: 12px 16px;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-cart-group-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 0;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-cart-group-table tr {
+	border-bottom: 1px solid #f0f0f0;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-cart-group-table tr:last-child {
+	border-bottom: none;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-cart-group-table td {
+	padding: 8px;
+	vertical-align: middle;
+	font-size: 14px;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-item-thumbnail {
+	width: 48px;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-item-thumbnail img {
+	width: 40px;
+	height: 40px;
+	object-fit: cover;
+	border-radius: 4px;
+	display: block;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-item-name {
+	font-weight: 500;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-item-name strong {
+	display: block;
+	font-weight: 500;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-item-variation {
+	font-size: 12px;
+	color: #757575;
+	margin-top: 4px;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-partial-badge {
+	display: inline-block;
+	padding: 2px 6px;
+	background: #e8f4fd;
+	border-radius: 4px;
+	font-size: 11px;
+	color: #0073aa;
+	margin-top: 4px;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-item-quantity {
+	text-align: center;
+	width: 70px;
+	color: #757575;
+}
+
+.wc-cbs-blocks-groups .wc-cbs-item-price {
+	text-align: right;
+	width: 90px;
+	font-weight: 600;
+}
+
+/* Responsive for Blocks */
+@media (max-width: 782px) {
+	.wc-cbs-blocks-groups .wc-cbs-cart-group-table td {
+		display: block;
+		width: 100%;
+		text-align: left;
+		padding: 4px 8px;
+	}
+
+	.wc-cbs-blocks-groups .wc-cbs-cart-group-table tr {
+		display: block;
+		padding: 8px 0;
+		border-bottom: 1px solid #f0f0f0;
+	}
+
+	.wc-cbs-blocks-groups .wc-cbs-item-thumbnail {
+		width: auto;
+		margin-bottom: 8px;
+	}
+
+	.wc-cbs-blocks-groups .wc-cbs-item-thumbnail img {
+		width: 48px;
+		height: 48px;
+	}
+
+	.wc-cbs-blocks-groups .wc-cbs-item-quantity,
+	.wc-cbs-blocks-groups .wc-cbs-item-price {
+		width: auto;
+		text-align: left;
+	}
+
+	.wc-cbs-blocks-groups .wc-cbs-item-price {
+		font-weight: 600;
+	}
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+	.wc-cbs-cart-group-table td {
+		display: block;
+		width: 100%;
+		text-align: left !important;
+		padding: 5px 10px;
+	}
+
+	.wc-cbs-cart-group-table tr {
+		display: block;
+		margin-bottom: 15px;
+		padding-bottom: 15px;
+		border-bottom: 2px solid #ddd;
+	}
+
+	.wc-cbs-item-thumbnail,
+	.wc-cbs-item-quantity,
+	.wc-cbs-item-price {
+		width: 100%;
+	}
+}
