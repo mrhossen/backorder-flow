@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Backorder Flow — Waiting Package</title>
+  <desc id="desc">Cream parcel outline with an integrated mint clock on a purple gradient background.</desc>
+  <defs>
+    <linearGradient id="purple" x1="0.08" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#A54CEB"/>
+      <stop offset="0.38" stop-color="#702BB2"/>
+      <stop offset="0.75" stop-color="#4C167D"/>
+      <stop offset="1" stop-color="#350B5D"/>
+    </linearGradient>
+    <linearGradient id="cream" gradientUnits="userSpaceOnUse" x1="208" y1="207" x2="762" y2="810">
+      <stop offset="0" stop-color="#FFFCE8"/>
+      <stop offset="0.55" stop-color="#FFF2D3"/>
+      <stop offset="1" stop-color="#EED8BC"/>
+    </linearGradient>
+    <linearGradient id="mint" gradientUnits="userSpaceOnUse" x1="558" y1="514" x2="858" y2="814">
+      <stop offset="0" stop-color="#98FFDD"/>
+      <stop offset="0.55" stop-color="#48EFBC"/>
+      <stop offset="1" stop-color="#16CF9E"/>
+    </linearGradient>
+    <mask id="parcelMask" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <rect width="1024" height="1024" fill="white"/>
+      <circle cx="708" cy="664" r="187" fill="black"/>
+    </mask>
+  </defs>
+  <rect width="1024" height="1024" rx="220" fill="url(#purple)"/>
+  <!-- Parcel lines stop cleanly around the clock. -->
+  <g fill="none" stroke="url(#cream)" stroke-width="38" stroke-linejoin="round" stroke-linecap="round" mask="url(#parcelMask)">
+    <path d="M208 352 L474 207 Q486 201 498 207 L748 345 Q762 352 762 366 V646 Q762 660 750 667 L497 806 Q484 813 471 806 L220 668 Q208 661 208 647 Z"/>
+    <path d="M215 352 L484 496 L756 349"/>
+    <path d="M484 496 V802"/>
+    <path d="M345 425 L614 272"/>
+  </g>
+  <!-- Integrated waiting clock. -->
+  <circle cx="708" cy="664" r="150" fill="none" stroke="url(#mint)" stroke-width="38"/>
+  <path d="M708 580 V664 L765 686" fill="none" stroke="url(#mint)" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

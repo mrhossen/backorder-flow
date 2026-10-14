@@ -146,15 +146,15 @@ class WMBF_Frontend_Display {
 			return;
 		}
 
-		// For simple products, also use placeholder with quantity checking
-		if ( ! $this->should_display_backorder_status( $product ) ) {
+		// Simple products use a placeholder that follows the selected quantity.
+		if ( ! self::accepts_backorders( $product ) ) {
 			return;
 		}
 
+		// Products without a status show the default backorder message in the same card.
 		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
-
 		if ( ! $status ) {
-			return;
+			$status = self::get_default_status();
 		}
 
 		$this->render_simple_product_placeholder( $product, $status );
@@ -329,6 +329,21 @@ class WMBF_Frontend_Display {
 	}
 
 	/**
+	 * The status used for products on backorder that have no status of their own.
+	 *
+	 * @return array
+	 */
+	public static function get_default_status() {
+		return array(
+			'id'          => 'default_backorder',
+			'name'        => apply_filters( 'wmbf_default_backorder_label', __( 'On Backorder', 'backorder-flow' ) ),
+			'description' => apply_filters( 'wmbf_default_backorder_description', self::get_default_message() ),
+			'color'       => apply_filters( 'wmbf_default_backorder_color', '#8b8e94' ),
+			'enabled'     => true,
+		);
+	}
+
+	/**
 	 * Display backorder status in cart.
 	 *
 	 * @param string $product_name Product name HTML.
@@ -339,22 +354,36 @@ class WMBF_Frontend_Display {
 	public function display_backorder_status_cart( $product_name, $cart_item, $cart_item_key ) {
 		$product = $cart_item['data'];
 
-		if ( ! $product ) {
+		if ( ! $product || ! self::accepts_backorders( $product ) ) {
 			return $product_name;
 		}
 
-		if ( ! $this->should_display_backorder_status( $product ) ) {
+		// Only in the cart table itself, not in the mini cart or the checkout summary.
+		if ( ! is_cart() || ! did_action( 'woocommerce_before_cart_contents' ) || did_action( 'woocommerce_cart_contents' ) ) {
+			return $product_name;
+		}
+
+		$quantity      = isset( $cart_item['quantity'] ) ? (int) $cart_item['quantity'] : 1;
+		$backorder_qty = self::get_backorder_quantity( $product, $quantity );
+
+		if ( $backorder_qty <= 0 ) {
 			return $product_name;
 		}
 
 		$status = WMBF_Product_Meta::get_product_backorder_status( $product );
-
 		if ( ! $status ) {
-			return $product_name;
+			$status = self::get_default_status();
 		}
 
-		// Don't show here - will be shown in grouped cart display.
-		return $product_name;
+		$label = $status['name'];
+		if ( $backorder_qty < $quantity ) {
+			/* translators: 1: quantity on backorder, 2: quantity in the cart, 3: status name */
+			$label = sprintf( __( '%1$d of %2$d · %3$s', 'backorder-flow' ), $backorder_qty, $quantity, $status['name'] );
+		}
+
+		$color = ! empty( $status['color'] ) && sanitize_hex_color( $status['color'] ) ? $status['color'] : '#8b8e94';
+
+		return $product_name . '<span class="wmbf-cart-tag" style="--wmbf-color: ' . esc_attr( $color ) . ';">' . esc_html( $label ) . '</span>';
 	}
 
 	/**
@@ -459,28 +488,21 @@ class WMBF_Frontend_Display {
 	 * @param string $context Display context (shop, single, cart, checkout).
 	 */
 	private function render_backorder_badge( $status, $context = 'single' ) {
+		self::render_status_card( $status, $context, 'single' === $context ? 'wc-cbs-default-badge' : '' );
+	}
+
+	/**
+	 * Render the status card from the single-product-status.php template.
+	 *
+	 * @param array  $status      Status data.
+	 * @param string $context     Display context (single, shop, shortcode).
+	 * @param string $extra_class Extra CSS classes.
+	 */
+	public static function render_status_card( $status, $context = 'single', $extra_class = '' ) {
 		$template_path = WMBF()->locate_template( 'single-product-status.php' );
 
 		if ( file_exists( $template_path ) ) {
 			include $template_path;
-		} else {
-			// Fallback inline template.
-			$color = isset( $status['color'] ) ? $status['color'] : '#ff9800';
-			$name = isset( $status['name'] ) ? $status['name'] : '';
-			$description = isset( $status['description'] ) ? $status['description'] : '';
-			// Add a class to identify this as default (non-Elementor) badge
-			$extra_class = ( $context === 'single' ) ? ' wc-cbs-default-badge' : '';
-			?>
-			<div class="wc-cbs-backorder-badge wc-cbs-backorder-badge-<?php echo esc_attr( $context ); ?><?php echo esc_attr( $extra_class ); ?>" style="border-color: <?php echo esc_attr( $color ); ?>;">
-				<span class="wc-cbs-backorder-badge-icon" style="background-color: <?php echo esc_attr( $color ); ?>;"></span>
-				<div class="wc-cbs-backorder-badge-content">
-					<strong class="wc-cbs-backorder-badge-title"><?php echo esc_html( $name ); ?></strong>
-					<?php if ( $description ) : ?>
-						<span class="wc-cbs-backorder-badge-description"><?php echo esc_html( $description ); ?></span>
-					<?php endif; ?>
-				</div>
-			</div>
-			<?php
 		}
 	}
 
@@ -584,102 +606,153 @@ class WMBF_Frontend_Display {
 	}
 
 	/**
+	 * Strings and helpers shared by the product page scripts.
+	 *
+	 * @return array
+	 */
+	private static function card_script_data() {
+		return array(
+			/* translators: %d: quantity (always 1) */
+			'shipsNowOne'  => __( '%d ships now', 'backorder-flow' ),
+			/* translators: %d: quantity */
+			'shipsNowMany' => __( '%d ship now', 'backorder-flow' ),
+			/* translators: %d: quantity */
+			'onBackorder'  => __( '%d on backorder', 'backorder-flow' ),
+			'nowColor'     => apply_filters( 'wmbf_ships_now_color', '#2e9e63' ),
+		);
+	}
+
+	/**
+	 * JavaScript that fills a placeholder with the status card.
+	 *
+	 * Builds the same markup as templates/single-product-status.php, plus a "ships now /
+	 * on backorder" split when the shopper picks more than is in stock.
+	 *
+	 * @return string
+	 */
+	private static function card_script() {
+		return "
+			function wmbfRenderCard(el, status, now, later, strings) {
+				var ns = 'http://www.w3.org/2000/svg';
+				var color = status.color || '#8b8e94';
+
+				function node(tag, className, text) {
+					var n = document.createElement(tag);
+					if (className) n.className = className;
+					if (text) n.textContent = text;
+					return n;
+				}
+
+				var icon = node('span', 'wmbf-status-card__icon');
+				icon.setAttribute('aria-hidden', 'true');
+				var svg = document.createElementNS(ns, 'svg');
+				svg.setAttribute('viewBox', '0 0 24 24');
+				var circle = document.createElementNS(ns, 'circle');
+				circle.setAttribute('cx', '12');
+				circle.setAttribute('cy', '12');
+				circle.setAttribute('r', '9');
+				var hands = document.createElementNS(ns, 'path');
+				hands.setAttribute('d', 'M12 7v5l3 2');
+				svg.appendChild(circle);
+				svg.appendChild(hands);
+				icon.appendChild(svg);
+
+				var body = node('div', 'wmbf-status-card__body wc-cbs-backorder-badge-content');
+				body.appendChild(node('strong', 'wmbf-status-card__title wc-cbs-backorder-badge-title', status.name));
+				if (status.description) {
+					body.appendChild(node('span', 'wmbf-status-card__text wc-cbs-backorder-badge-description', status.description));
+				}
+
+				if (now > 0 && later > 0) {
+					var split = node('div', 'wmbf-status-card__split');
+					var bar = node('div', 'wmbf-status-card__bar');
+					bar.setAttribute('aria-hidden', 'true');
+					var barNow = node('i', 'is-now');
+					barNow.style.flexGrow = now;
+					barNow.style.background = strings.nowColor;
+					var barLater = node('i', 'is-later');
+					barLater.style.flexGrow = later;
+					bar.appendChild(barNow);
+					bar.appendChild(barLater);
+					var legend = node('span', 'wmbf-status-card__legend');
+					var nowText = node('em', 'is-now', (1 === now ? strings.shipsNowOne : strings.shipsNowMany).replace('%d', now));
+					nowText.style.setProperty('--wmbf-dot', strings.nowColor);
+					legend.appendChild(nowText);
+					legend.appendChild(node('em', 'is-later', strings.onBackorder.replace('%d', later)));
+					split.appendChild(bar);
+					split.appendChild(legend);
+					body.appendChild(split);
+				}
+
+				el.textContent = '';
+				el.style.setProperty('--wmbf-color', color);
+				el.appendChild(icon);
+				el.appendChild(body);
+				el.style.display = el.classList.contains('wc-cbs-hidden-by-widget') ? 'none' : '';
+			}
+
+			// Units that ship now and units that wait, for a quantity.
+			function wmbfSplit(managing, stock, quantity) {
+				var qty = parseInt(quantity, 10) || 1;
+				if (!managing) {
+					return { now: 0, later: qty };
+				}
+				var inStock = Math.max(0, parseInt(stock, 10) || 0);
+				return { now: Math.min(qty, inStock), later: Math.max(0, qty - inStock) };
+			}
+		";
+	}
+
+	/**
 	 * Render placeholder for simple products with quantity checking.
 	 *
 	 * @param WC_Product $product Product object.
 	 * @param array      $status  Backorder status data.
 	 */
 	private function render_simple_product_placeholder( $product, $status ) {
-		$stock_quantity = $product->get_stock_quantity();
-		$managing_stock = $product->managing_stock();
-		$color          = isset( $status['color'] ) ? $status['color'] : '#ff9800';
-
 		// Output the placeholder container.
-		echo '<div class="wc-cbs-backorder-badge wc-cbs-backorder-badge-single wc-cbs-simple-placeholder wc-cbs-default-badge" style="display: none;"></div>';
+		echo '<div class="wc-cbs-backorder-badge wmbf-status-card wc-cbs-backorder-badge-single wc-cbs-simple-placeholder wc-cbs-default-badge" style="display: none;" aria-live="polite"></div>';
 
-		// Prepare data for inline script.
 		$script_data = array(
-			'status'         => $status,
-			'stockQuantity'  => $stock_quantity,
-			'managingStock'  => $managing_stock,
+			'status'        => array(
+				'name'        => $status['name'],
+				'description' => isset( $status['description'] ) ? $status['description'] : '',
+				'color'       => isset( $status['color'] ) ? $status['color'] : '',
+			),
+			'stockQuantity' => $product->get_stock_quantity(),
+			'managingStock' => $product->managing_stock(),
+			'strings'       => self::card_script_data(),
 		);
 		?>
 		<script type="text/javascript">
 		(function() {
-			var backorderStatus = <?php echo wp_json_encode( $script_data['status'] ); ?>;
-			var stockQuantity = <?php echo wp_json_encode( $script_data['stockQuantity'] ); ?>;
-			var managingStock = <?php echo wp_json_encode( $script_data['managingStock'] ); ?>;
-
-			function renderBadge(placeholder, status, color) {
-				var icon = document.createElement('span');
-				icon.className = 'wc-cbs-backorder-badge-icon';
-				icon.style.backgroundColor = color;
-
-				var content = document.createElement('div');
-				content.className = 'wc-cbs-backorder-badge-content';
-
-				var title = document.createElement('strong');
-				title.className = 'wc-cbs-backorder-badge-title';
-				title.textContent = status.name;
-				content.appendChild(title);
-
-				if (status.description) {
-					var description = document.createElement('span');
-					description.className = 'wc-cbs-backorder-badge-description';
-					description.textContent = status.description;
-					content.appendChild(description);
-				}
-
-				placeholder.textContent = '';
-				placeholder.appendChild(icon);
-				placeholder.appendChild(content);
-				placeholder.style.borderColor = color;
-				placeholder.style.display = placeholder.classList.contains('wc-cbs-hidden-by-widget') ? 'none' : 'inline-flex';
-			}
-
-			function shouldShowBackorderMessage(quantity) {
-				// Always show if not managing stock but backorders allowed (means it's on backorder)
-				if (!managingStock) {
-					return true;
-				}
-
-				var stockQty = parseInt(stockQuantity) || 0;
-				var selectedQty = parseInt(quantity) || 1;
-
-				// Show message if:
-				// 1. Stock is 0 or less (out of stock), OR
-				// 2. Selected quantity exceeds available stock
-				return (stockQty <= 0 || selectedQty > stockQty);
-			}
+			var data = <?php echo wp_json_encode( $script_data ); ?>;
+			<?php echo self::card_script(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static script. ?>
 
 			function updateBackorderDisplay() {
 				var placeholder = document.querySelector('.wc-cbs-simple-placeholder');
 				if (!placeholder) return;
 
 				var qtyInput = document.querySelector('form.cart input.qty');
-				var quantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+				var split = wmbfSplit(data.managingStock, data.stockQuantity, qtyInput ? qtyInput.value : 1);
 
-				if (shouldShowBackorderMessage(quantity)) {
-					var color = backorderStatus.color || '#ff9800';
-
-					renderBadge(placeholder, backorderStatus, color);
+				if (split.later > 0) {
+					wmbfRenderCard(placeholder, data.status, split.now, split.later, data.strings);
 				} else {
 					placeholder.style.display = 'none';
 				}
 			}
 
-			// Run when DOM is ready
 			function init() {
 				updateBackorderDisplay();
 
-				// Listen for quantity changes
 				var qtyInput = document.querySelector('form.cart input.qty');
 				if (qtyInput) {
 					qtyInput.addEventListener('change', updateBackorderDisplay);
 					qtyInput.addEventListener('input', updateBackorderDisplay);
 				}
 
-				// Also listen for WooCommerce quantity button clicks
+				// Theme quantity buttons.
 				document.querySelectorAll('.quantity .plus, .quantity .minus').forEach(function(btn) {
 					btn.addEventListener('click', function() {
 						setTimeout(updateBackorderDisplay, 50);
@@ -701,79 +774,30 @@ class WMBF_Frontend_Display {
 	 * Render placeholder for variable products that will be updated via JavaScript.
 	 */
 	private function render_variable_product_placeholder() {
-		echo '<div class="wc-cbs-backorder-badge wc-cbs-backorder-badge-single wc-cbs-variable-placeholder wc-cbs-default-badge" style="display: none;"></div>';
-
+		echo '<div class="wc-cbs-backorder-badge wmbf-status-card wc-cbs-backorder-badge-single wc-cbs-variable-placeholder wc-cbs-default-badge" style="display: none;" aria-live="polite"></div>';
 		?>
 		<script type="text/javascript">
 		(function() {
+			var strings = <?php echo wp_json_encode( self::card_script_data() ); ?>;
 			var currentVariation = null;
-
-			function renderBadge(placeholder, status, color) {
-				var icon = document.createElement('span');
-				icon.className = 'wc-cbs-backorder-badge-icon';
-				icon.style.backgroundColor = color;
-
-				var content = document.createElement('div');
-				content.className = 'wc-cbs-backorder-badge-content';
-
-				var title = document.createElement('strong');
-				title.className = 'wc-cbs-backorder-badge-title';
-				title.textContent = status.name;
-				content.appendChild(title);
-
-				if (status.description) {
-					var description = document.createElement('span');
-					description.className = 'wc-cbs-backorder-badge-description';
-					description.textContent = status.description;
-					content.appendChild(description);
-				}
-
-				placeholder.textContent = '';
-				placeholder.appendChild(icon);
-				placeholder.appendChild(content);
-				placeholder.style.borderColor = color;
-				placeholder.style.display = placeholder.classList.contains('wc-cbs-hidden-by-widget') ? 'none' : 'inline-flex';
-			}
-
-			function shouldShowBackorderMessage(variation, quantity) {
-				if (!variation || !variation.wmbf_backorder_status) {
-					return false;
-				}
-
-				var status = variation.wmbf_backorder_status;
-
-				// Always show if backorder status exists and backorders allowed
-				if (!status.managing_stock) {
-					return true;
-				}
-
-				var stockQty = parseInt(status.stock_quantity) || 0;
-				var selectedQty = parseInt(quantity) || 1;
-
-				// Show message if:
-				// 1. Stock is 0 or less (out of stock), OR
-				// 2. Selected quantity exceeds available stock
-				return (stockQty <= 0 || selectedQty > stockQty);
-			}
+			<?php echo self::card_script(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static script. ?>
 
 			function updateBackorderDisplay() {
 				var placeholder = document.querySelector('.wc-cbs-variable-placeholder');
 				if (!placeholder) return;
 
-				if (!currentVariation || !currentVariation.wmbf_backorder_status) {
+				var status = currentVariation && currentVariation.wmbf_backorder_status;
+				if (!status) {
 					placeholder.style.display = 'none';
 					return;
 				}
 
 				var variationsForm = document.querySelector('.variations_form');
 				var qtyInput = variationsForm ? variationsForm.querySelector('input.qty') : null;
-				var quantity = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+				var split = wmbfSplit(status.managing_stock, status.stock_quantity, qtyInput ? qtyInput.value : 1);
 
-				if (shouldShowBackorderMessage(currentVariation, quantity)) {
-					var status = currentVariation.wmbf_backorder_status;
-					var color = status.color || '#ff9800';
-
-					renderBadge(placeholder, status, color);
+				if (split.later > 0) {
+					wmbfRenderCard(placeholder, status, split.now, split.later, strings);
 				} else {
 					placeholder.style.display = 'none';
 				}
@@ -783,7 +807,7 @@ class WMBF_Frontend_Display {
 				var variationsForm = document.querySelector('.variations_form');
 				if (!variationsForm) return;
 
-				// Listen for variation changes using jQuery events (WooCommerce uses jQuery)
+				// WooCommerce fires these as jQuery events.
 				if (window.jQuery) {
 					jQuery('.variations_form').on('found_variation', function(event, variation) {
 						currentVariation = variation;
@@ -792,28 +816,24 @@ class WMBF_Frontend_Display {
 
 					jQuery('.variations_form').on('reset_data', function() {
 						currentVariation = null;
-						var placeholder = document.querySelector('.wc-cbs-variable-placeholder');
-						if (placeholder) {
-							placeholder.style.display = 'none';
-						}
+						updateBackorderDisplay();
 					});
 				}
 
-				// Listen for quantity changes
 				var qtyInput = variationsForm.querySelector('input.qty');
 				if (qtyInput) {
 					qtyInput.addEventListener('change', updateBackorderDisplay);
 					qtyInput.addEventListener('input', updateBackorderDisplay);
 				}
 
-				// Also listen for WooCommerce quantity button clicks
+				// Theme quantity buttons.
 				variationsForm.querySelectorAll('.quantity .plus, .quantity .minus').forEach(function(btn) {
 					btn.addEventListener('click', function() {
 						setTimeout(updateBackorderDisplay, 50);
 					});
 				});
 
-				// Check if variation is already selected on page load (single variation product)
+				// A product with a single variation has it selected on page load.
 				if (window.jQuery) {
 					var variations = jQuery('.variations_form').data('product_variations');
 					if (variations && variations.length === 1) {

@@ -83,7 +83,7 @@ The plugin's most powerful feature is automatic cart grouping. When customers ha
 
 1. Upload the plugin files to `/wp-content/plugins/backorder-flow/` directory, or install through WordPress plugins screen
 2. Activate the plugin through the 'Plugins' screen in WordPress
-3. Go to WooCommerce > Settings > Backorder Status to configure
+3. Go to WooCommerce > Settings > Backorder Flow to configure
 4. Create your custom backorder statuses
 5. Assign backorder statuses to products when editing products
 6. Enable backorders for products in the Inventory tab

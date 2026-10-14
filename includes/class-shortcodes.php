@@ -133,18 +133,7 @@ class WMBF_Shortcodes {
 
 			case 'badge':
 			default:
-				$color = isset( $status['color'] ) ? $status['color'] : '#ff9800';
-				?>
-				<div class="wc-cbs-backorder-badge wc-cbs-shortcode-badge" style="border-color: <?php echo esc_attr( $color ); ?>;">
-					<span class="wc-cbs-backorder-badge-icon" style="background-color: <?php echo esc_attr( $color ); ?>;"></span>
-					<div class="wc-cbs-backorder-badge-content">
-						<strong class="wc-cbs-backorder-badge-title"><?php echo esc_html( $status['name'] ); ?></strong>
-						<?php if ( ! empty( $status['description'] ) ) : ?>
-							<span class="wc-cbs-backorder-badge-description"><?php echo esc_html( $status['description'] ); ?></span>
-						<?php endif; ?>
-					</div>
-				</div>
-				<?php
+				WMBF_Frontend_Display::render_status_card( $status, 'shortcode', 'wc-cbs-shortcode-badge' );
 				break;
 		}
 
