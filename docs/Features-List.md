@@ -8,18 +8,19 @@ Every feature below was tested end to end on **WordPress 7.1.3, WooCommerce 11.2
 
 ## 1. Backorder statuses (admin)
 
-Location: **WooCommerce → Settings → Backorder Status**.
+Location: **WooCommerce → Settings → Backorder Flow** (also linked as "Settings" from the Plugins screen). The screen has a sidebar with the store's status summary, quick links and help.
 
 | Feature | Details |
 | --- | --- |
 | Unlimited custom statuses | Each status has a name, customer-facing description, color, priority and an enabled switch. Two statuses are created on activation ("Ships in 10 days", "Ships in 15 days"). |
-| Add / edit in a modal | Saved over AJAX. The edit modal shows the status ID (click to select) for use in shortcodes and widgets. |
+| Add / edit in a side panel | Saved over AJAX, with a live preview of the product page card and the cart group. Colors come from a brand palette or a hex value. The panel shows the status ID with a copy button for use in shortcodes and widgets. |
+| Starter statuses | When no statuses exist, an empty state offers to add a starter set in one click. |
 | Enable / disable | A disabled status is hidden everywhere: product pages, cart groups, shortcodes, widgets and new orders. Products using it fall back to the default backorder message. |
-| Delete | With confirmation. |
-| Drag-and-drop ordering | Dragging rows rewrites the priorities. Lower priority groups are shown first in the cart. |
+| Delete | With a confirmation dialog, then an Undo toast. |
+| Drag-and-drop ordering | Dragging rows (or moving them with the keyboard) rewrites the priorities. Lower priority groups are shown first in the cart. |
 | Default backorder message | Shown as the stock text for products that are on backorder but have no custom status, and used as the description of the "On Backorder" cart group. |
-| Export / import | Export downloads all statuses as JSON. Import replaces the statuses from a JSON file; each field is sanitized and entries without a name are skipped. |
-| Shortcode reference | The settings page lists every shortcode with its usage. |
+| Export / import | Export downloads all statuses as JSON. Import shows what will change before it replaces the statuses; each field is sanitized and entries without a name are skipped. |
+| Shortcode builder | The settings page lists every shortcode with copy buttons and builds a shortcode for a chosen product and style. |
 
 All admin actions check the `manage_woocommerce` capability and a nonce.
 
@@ -27,37 +28,38 @@ All admin actions check the `manage_woocommerce` capability and a nonce.
 
 | Feature | Details |
 | --- | --- |
-| Simple products | "Backorder Status" field in **Product data → Inventory**. It appears when stock is managed with backorders allowed, or when stock is not managed and the stock status is "On backorder". |
+| Simple products | "Backorder status" field in **Product data → Inventory**, with a preview of the card customers will see. It appears when stock is managed with backorders allowed, or when stock is not managed and the stock status is "On backorder". |
 | Variable products | The parent product's status applies to every variation that has no status of its own. |
 | Per-variation status | Each variation has its own "Backorder Status" select (default: "Same as parent product"), saved with WooCommerce's "Save changes" button. |
 | Quick Edit | Set or clear the status from the products list. |
 | Bulk Edit | Set or clear the status on many products at once ("— No Change —", "Default backorder message", or any enabled status). |
-| Products list column | "Backorder Status" column, shown in the status color. |
+| Products list column | "Backorder Status" column with a colored pill per status ("Default message" for backorderable products without one, dimmed when the status is disabled). |
 
 ## 3. Product page display
 
 | Feature | Details |
 | --- | --- |
-| Status badge | Colored badge with the status name and description, shown above the add-to-cart form. |
-| Quantity-aware | The badge appears only when stock is 0 or less, or when the selected quantity is more than the stock. It updates live as the quantity changes (typing, arrows, +/- buttons). |
-| Variable products | The badge follows the selected variation (its own status or the parent's) and its stock. |
-| Products without stock management | Products set to "On backorder" show their status badge. |
-| Replaces WooCommerce's text | When the badge applies, WooCommerce's "Available on backorder" text is hidden. In-stock text such as "10 in stock" is kept while the product still has stock. |
-| Default message | Backordered products without a custom status show the default backorder message as their stock text. |
-| No duplicates | When a shortcode or Elementor widget already shows the current product's status, the automatic badge is not shown. |
+| Status card | Card in the status color with the status name and description, shown above the add-to-cart form. When part of the selected quantity is in stock, the card shows how many ship now and how many are on backorder. |
+| Quantity-aware | The card appears only when stock is 0 or less, or when the selected quantity is more than the stock. It updates live as the quantity changes (typing, arrows, +/- buttons). |
+| Variable products | The card follows the selected variation (its own status or the parent's) and its stock. |
+| Products without stock management | Products set to "On backorder" show their status card. |
+| Replaces WooCommerce's text | When the card applies, WooCommerce's "Available on backorder" text is hidden. In-stock text such as "10 in stock" is kept while the product still has stock. |
+| Default message | Backordered products without a custom status show an "On Backorder" card with the default backorder message. |
+| No duplicates | When a shortcode or Elementor widget already shows the current product's status, the automatic card is not shown. |
 
 ## 4. Cart and checkout shipping groups
 
 | Feature | Details |
 | --- | --- |
 | Automatic grouping | Cart items are grouped into **Ships Now**, one group per backorder status, and **On Backorder** for backordered items without a custom status. |
-| Stock splitting | A line that is partly in stock is split, e.g. 12 ordered with 10 in stock shows 10 under "Ships Now" and 2 under the backorder group, each marked "(10 of 12 total)". |
+| Stock splitting | A line that is partly in stock is split, e.g. 12 ordered with 10 in stock shows 10 under "Ships Now" and 2 under the backorder group, each marked "10 of 12". |
 | Prices per group | Each part shows its share of the line total (including tax when the store displays prices with tax). |
 | Variation details | Variation attributes are listed under the product name. |
+| Cart line tag | In the classic cart table, each backordered line shows a small tag with its status (and "2 of 3" when the line is split). |
 | Only when relevant | Groups are only shown when the cart has backordered items. |
-| Classic cart | Shown below the cart table, inside the cart form, so it refreshes when the cart is updated. |
-| Classic checkout | Shown before the payment methods and refreshed with the order review. |
-| Block cart and checkout | Groups are inserted into the WooCommerce Cart and Checkout blocks and refresh after quantity changes and item removal (through the plugin's REST endpoint). A server-rendered fallback is included. |
+| Classic cart | A "Your order ships in N parts" schedule below the cart table, inside the cart form, so it refreshes when the cart is updated. |
+| Classic checkout | A compact "Delivery schedule" before the payment methods, refreshed with the order review. |
+| Block cart and checkout | Groups are inserted into the WooCommerce Cart and Checkout blocks and refresh after quantity changes and item removal (through the plugin's REST endpoint). They use the same markup as the classic templates, and a server-rendered fallback is included. |
 | Group order | Ships Now first, then statuses by priority, then On Backorder. |
 
 ## 5. Orders and emails
@@ -67,8 +69,8 @@ All admin actions check the `manage_woocommerce` capability and a nonce.
 | Saved at checkout | Each order line stores its in-stock quantity, backorder quantity and the status ID and name at the time of purchase (classic and block checkout). |
 | Stable history | Order pages and emails use the saved status name, so renaming or deleting a status later does not change past orders. |
 | Customer order page | "Shipping Information" section on the order received page and My Account → Orders. |
-| Admin order screen | "Backorder Shipping Groups" panel on the order edit screen. |
-| Orders list column | "Backorder" column with a clock icon for orders that contain backordered items (posts and HPOS order tables). |
+| Admin order screen | "Backorder Flow" box on the order edit screen with each shipping group, its items and quantities. |
+| Orders list column | "Backorder" column with an "N shipments" chip for orders that contain backordered items (posts and HPOS order tables). |
 | Order emails | "Shipping Groups" section in order emails (HTML and plain text), plus the status under each backordered item, e.g. "Ships in 10 days – 1 item(s)". |
 | HPOS | Declared compatible with High-Performance Order Storage and tested with it on and off. |
 
@@ -126,7 +128,7 @@ Namespace `wmbf/v1`. All routes are read-only (GET) and public.
 
 **Stored data:** options `wmbf_statuses`, `wmbf_default_message`, `wmbf_version`; product/variation meta `_wmbf_backorder_status`; order item meta `_wmbf_instock_quantity`, `_wmbf_backorder_quantity`, `_wmbf_backorder_status_id`, `_wmbf_backorder_status_name`.
 
-**Other:** translation ready (text domain `backorder-flow`); admin scripts load only on the WooCommerce settings screen; frontend output is escaped, including badges built in JavaScript.
+**Other:** translation ready (text domain `backorder-flow`); the settings script loads only on the WooCommerce settings screen; frontend output is escaped, including status cards built in JavaScript.
 
 ---
 

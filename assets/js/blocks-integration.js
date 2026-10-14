@@ -50,129 +50,20 @@
 	}
 
 	/**
-	 * Create shipping groups HTML element.
+	 * Create the shipping groups element from the server-rendered markup.
 	 *
-	 * @param {Array} groups Groups data.
+	 * The markup comes from the plugin's cart-groups.php template, so the blocks show
+	 * exactly what the classic cart and checkout show.
+	 *
+	 * @param {Object} data Groups data.
 	 * @param {string} context Page context.
 	 * @return {HTMLElement} Groups container element.
 	 */
-	function createGroupsElement( groups, context ) {
+	function createGroupsElement( data, context ) {
 		var container = document.createElement( 'div' );
-		container.className = 'wc-cbs-cart-groups wc-cbs-cart-groups-' + context + ' wc-cbs-blocks-groups';
+		container.className = 'wc-cbs-blocks-groups';
 		container.id = 'wmbf-shipping-groups-' + context;
-
-		var title = document.createElement( 'h2' );
-		title.className = 'wc-cbs-cart-groups-title';
-		title.textContent = wmbfBlocksData.i18n.shippingGroups || 'Shipping Groups';
-		container.appendChild( title );
-
-		var description = document.createElement( 'p' );
-		description.className = 'wc-cbs-cart-groups-description';
-		description.textContent = wmbfBlocksData.i18n.shippingDescription || 'Your order contains items that will ship at different times:';
-		container.appendChild( description );
-
-		groups.forEach( function( group ) {
-			var groupDiv = document.createElement( 'div' );
-			groupDiv.className = 'wc-cbs-cart-group';
-			groupDiv.setAttribute( 'data-group-id', group.id );
-
-			var header = document.createElement( 'div' );
-			header.className = 'wc-cbs-cart-group-header';
-			header.style.borderLeftColor = group.color;
-
-			var groupTitle = document.createElement( 'h3' );
-			groupTitle.className = 'wc-cbs-cart-group-title';
-			groupTitle.style.color = group.color;
-			groupTitle.textContent = group.name;
-			header.appendChild( groupTitle );
-
-			if ( group.description ) {
-				var groupDesc = document.createElement( 'p' );
-				groupDesc.className = 'wc-cbs-cart-group-description';
-				groupDesc.textContent = group.description;
-				header.appendChild( groupDesc );
-			}
-
-			groupDiv.appendChild( header );
-
-			var itemsDiv = document.createElement( 'div' );
-			itemsDiv.className = 'wc-cbs-cart-group-items';
-
-			var table = document.createElement( 'table' );
-			table.className = 'wc-cbs-cart-group-table';
-
-			var tbody = document.createElement( 'tbody' );
-
-			group.items.forEach( function( item ) {
-				var tr = document.createElement( 'tr' );
-				tr.className = 'wc-cbs-cart-group-item';
-				if ( item.is_partial ) {
-					tr.className += ' wc-cbs-partial-item';
-				}
-
-				// Thumbnail cell.
-				var tdThumb = document.createElement( 'td' );
-				tdThumb.className = 'wc-cbs-item-thumbnail';
-				if ( item.thumbnail ) {
-					tdThumb.innerHTML = item.thumbnail;
-				}
-				tr.appendChild( tdThumb );
-
-				// Name cell.
-				var tdName = document.createElement( 'td' );
-				tdName.className = 'wc-cbs-item-name';
-
-				var nameStrong = document.createElement( 'strong' );
-				nameStrong.textContent = item.name;
-				tdName.appendChild( nameStrong );
-
-				if ( item.variation && Object.keys( item.variation ).length > 0 ) {
-					var variationDiv = document.createElement( 'div' );
-					variationDiv.className = 'wc-cbs-item-variation';
-					for ( var attrKey in item.variation ) {
-						if ( item.variation.hasOwnProperty( attrKey ) ) {
-							var attrDiv = document.createElement( 'div' );
-							attrDiv.textContent = attrKey + ': ' + item.variation[ attrKey ];
-							variationDiv.appendChild( attrDiv );
-						}
-					}
-					tdName.appendChild( variationDiv );
-				}
-
-				if ( item.is_partial ) {
-					var partialBadge = document.createElement( 'span' );
-					partialBadge.className = 'wc-cbs-partial-badge';
-					partialBadge.textContent = ( wmbfBlocksData.i18n.partial || '(%1$d of %2$d total)' )
-						.replace( '%1$d', item.quantity )
-						.replace( '%2$d', item.total_qty );
-					tdName.appendChild( partialBadge );
-				}
-
-				tr.appendChild( tdName );
-
-				// Quantity cell.
-				var tdQty = document.createElement( 'td' );
-				tdQty.className = 'wc-cbs-item-quantity';
-				tdQty.textContent = ( wmbfBlocksData.i18n.qty || 'Qty:' ) + ' ' + item.quantity;
-				tr.appendChild( tdQty );
-
-				// Price cell.
-				var tdPrice = document.createElement( 'td' );
-				tdPrice.className = 'wc-cbs-item-price';
-				if ( item.price_html ) {
-					tdPrice.innerHTML = item.price_html;
-				}
-				tr.appendChild( tdPrice );
-
-				tbody.appendChild( tr );
-			});
-
-			table.appendChild( tbody );
-			itemsDiv.appendChild( table );
-			groupDiv.appendChild( itemsDiv );
-			container.appendChild( groupDiv );
-		});
-
+		container.innerHTML = data.html && data.html[ context ] ? data.html[ context ] : '';
 		return container;
 	}
 
@@ -277,16 +168,12 @@
 	 * @return {boolean}
 	 */
 	function shouldDisplayGroups( data ) {
-		if ( ! data || ! data.groups || data.groups.length === 0 ) {
+		if ( ! data || ! data.groups || data.groups.length === 0 || ! data.html ) {
 			return false;
 		}
 
-		// Show if there are multiple groups or has backorder items.
-		if ( data.groups.length >= 2 || data.has_backorder ) {
-			return true;
-		}
-
-		return false;
+		// Only when the cart has backordered items, like the classic cart.
+		return !! data.has_backorder;
 	}
 
 	/**
@@ -320,7 +207,7 @@
 		removeExistingGroups( context );
 
 		// Create and insert groups element.
-		var groupsElement = createGroupsElement( data.groups, context );
+		var groupsElement = createGroupsElement( data, context );
 		insertGroupsElement( groupsElement, insertionPoint );
 		groupsInserted[ context ] = true;
 

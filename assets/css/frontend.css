@@ -4,7 +4,7 @@
  * @package Backorder_Flow
  */
 
-/* Backorder Badge */
+/* Backorder Badge (legacy markup, still used by the Elementor widgets) */
 .wc-cbs-backorder-badge {
 	display: inline-flex;
 	align-items: center;
@@ -351,18 +351,8 @@
 	margin-top: 10px;
 }
 
-/* Hide default WooCommerce stock availability on single product pages when custom backorder status is shown */
-.single-product .wc-cbs-backorder-badge ~ .stock,
-.single-product .product .wc-cbs-backorder-badge ~ .stock,
-body.single-product p.stock,
-body.single-product .stock.in-stock,
-body.single-product .stock.out-of-stock,
+/* The status card replaces WooCommerce's "Available on backorder" text on product pages. */
 body.single-product .stock.available-on-backorder {
-	display: none !important;
-}
-
-/* Alternative method - hide stock on single product when our badge exists */
-body.single-product:has(.wc-cbs-backorder-badge) p.stock {
 	display: none !important;
 }
 
@@ -382,183 +372,6 @@ body:has(.elementor-widget-wc-cbs-backorder-badge) .wc-cbs-backorder-badge-singl
 body:has(.elementor-widget-wc-cbs-product-backorder-status) .wc-cbs-default-badge,
 body:has(.elementor-widget-wc-cbs-backorder-badge) .wc-cbs-default-badge {
 	display: none !important;
-}
-
-/* WooCommerce Blocks Integration */
-.wc-cbs-blocks-groups {
-	margin: 20px 0;
-	padding: 20px;
-	background: #f9f9f9;
-	border: 1px solid #e0e0e0;
-	border-radius: 8px;
-	clear: both;
-}
-
-/* Cart Block specific styles */
-.wp-block-woocommerce-cart .wc-cbs-blocks-groups,
-.wc-block-cart .wc-cbs-blocks-groups {
-	margin: 24px 0;
-}
-
-/* Checkout Block specific styles */
-.wp-block-woocommerce-checkout .wc-cbs-blocks-groups,
-.wc-block-checkout .wc-cbs-blocks-groups {
-	margin: 16px 0;
-	background: #fff;
-	border: 1px solid #dcdcde;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-cart-groups-title {
-	font-size: 18px;
-	font-weight: 600;
-	margin: 0 0 8px;
-	color: #1e1e1e;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-cart-groups-description {
-	font-size: 14px;
-	color: #757575;
-	margin: 0 0 16px;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-cart-group {
-	margin-bottom: 16px;
-	background: #fff;
-	border: 1px solid #e0e0e0;
-	border-radius: 4px;
-	overflow: hidden;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-cart-group:last-child {
-	margin-bottom: 0;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-cart-group-header {
-	padding: 12px 16px;
-	background: #fafafa;
-	border-left-width: 4px;
-	border-left-style: solid;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-cart-group-title {
-	font-size: 15px;
-	font-weight: 600;
-	margin: 0 0 4px;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-cart-group-description {
-	font-size: 13px;
-	color: #757575;
-	margin: 0;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-cart-group-items {
-	padding: 12px 16px;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-cart-group-table {
-	width: 100%;
-	border-collapse: collapse;
-	margin: 0;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-cart-group-table tr {
-	border-bottom: 1px solid #f0f0f0;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-cart-group-table tr:last-child {
-	border-bottom: none;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-cart-group-table td {
-	padding: 8px;
-	vertical-align: middle;
-	font-size: 14px;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-item-thumbnail {
-	width: 48px;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-item-thumbnail img {
-	width: 40px;
-	height: 40px;
-	object-fit: cover;
-	border-radius: 4px;
-	display: block;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-item-name {
-	font-weight: 500;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-item-name strong {
-	display: block;
-	font-weight: 500;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-item-variation {
-	font-size: 12px;
-	color: #757575;
-	margin-top: 4px;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-partial-badge {
-	display: inline-block;
-	padding: 2px 6px;
-	background: #e8f4fd;
-	border-radius: 4px;
-	font-size: 11px;
-	color: #0073aa;
-	margin-top: 4px;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-item-quantity {
-	text-align: center;
-	width: 70px;
-	color: #757575;
-}
-
-.wc-cbs-blocks-groups .wc-cbs-item-price {
-	text-align: right;
-	width: 90px;
-	font-weight: 600;
-}
-
-/* Responsive for Blocks */
-@media (max-width: 782px) {
-	.wc-cbs-blocks-groups .wc-cbs-cart-group-table td {
-		display: block;
-		width: 100%;
-		text-align: left;
-		padding: 4px 8px;
-	}
-
-	.wc-cbs-blocks-groups .wc-cbs-cart-group-table tr {
-		display: block;
-		padding: 8px 0;
-		border-bottom: 1px solid #f0f0f0;
-	}
-
-	.wc-cbs-blocks-groups .wc-cbs-item-thumbnail {
-		width: auto;
-		margin-bottom: 8px;
-	}
-
-	.wc-cbs-blocks-groups .wc-cbs-item-thumbnail img {
-		width: 48px;
-		height: 48px;
-	}
-
-	.wc-cbs-blocks-groups .wc-cbs-item-quantity,
-	.wc-cbs-blocks-groups .wc-cbs-item-price {
-		width: auto;
-		text-align: left;
-	}
-
-	.wc-cbs-blocks-groups .wc-cbs-item-price {
-		font-weight: 600;
-	}
 }
 
 /* Responsive */
@@ -581,5 +394,522 @@ body:has(.elementor-widget-wc-cbs-backorder-badge) .wc-cbs-default-badge {
 	.wc-cbs-item-quantity,
 	.wc-cbs-item-price {
 		width: 100%;
+	}
+}
+
+/* ==========================================================================
+   Status card (product page, shortcodes)
+
+   Takes the theme's font and text color, and only the status color, so it fits
+   light and dark themes alike.
+   ========================================================================== */
+
+.wc-cbs-backorder-badge.wmbf-status-card {
+	--wmbf-color: #8b8e94;
+	box-sizing: border-box;
+	display: grid;
+	grid-template-columns: 36px minmax(0, 1fr);
+	gap: 12px;
+	align-items: start;
+	max-width: 100%;
+	margin: 0 0 16px;
+	padding: 14px 16px;
+	border: 1px solid rgba(0, 0, 0, 0.1);
+	border: 1px solid color-mix(in srgb, var(--wmbf-color) 30%, transparent);
+	border-radius: 10px;
+	background: rgba(0, 0, 0, 0.03);
+	background: color-mix(in srgb, var(--wmbf-color) 8%, transparent);
+	color: inherit;
+	font-size: inherit;
+	line-height: 1.5;
+	text-align: left;
+	animation: wmbf-card-in 0.25s ease-out;
+}
+
+.wc-cbs-shortcode-badge.wmbf-status-card {
+	display: inline-grid;
+}
+
+.wmbf-status-card__icon {
+	display: grid;
+	place-items: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.06);
+	background: color-mix(in srgb, var(--wmbf-color) 18%, transparent);
+	color: var(--wmbf-color);
+	color: color-mix(in srgb, var(--wmbf-color) 78%, currentColor);
+}
+
+.wmbf-status-card__icon svg {
+	width: 19px;
+	height: 19px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2.1;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.wmbf-status-card .wmbf-status-card__title {
+	display: block;
+	margin: 0;
+	color: var(--wmbf-color);
+	color: color-mix(in srgb, var(--wmbf-color) 72%, currentColor);
+	font-size: 1em;
+	font-weight: 700;
+	line-height: 1.35;
+}
+
+.wmbf-status-card .wmbf-status-card__text {
+	display: block;
+	margin: 2px 0 0;
+	color: inherit;
+	font-size: 0.93em;
+	opacity: 0.8;
+}
+
+.wmbf-status-card__split {
+	display: grid;
+	gap: 6px;
+	margin-top: 10px;
+}
+
+.wmbf-status-card__bar {
+	display: flex;
+	gap: 2px;
+	height: 6px;
+	overflow: hidden;
+	border-radius: 6px;
+}
+
+.wmbf-status-card__bar i {
+	display: block;
+	min-width: 6px;
+	height: 100%;
+	background: var(--wmbf-color);
+}
+
+.wmbf-status-card__legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 14px;
+	font-size: 0.87em;
+	opacity: 0.85;
+}
+
+.wmbf-status-card__legend em {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-style: normal;
+}
+
+.wmbf-status-card__legend em::before {
+	content: "";
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--wmbf-dot, var(--wmbf-color));
+}
+
+@keyframes wmbf-card-in {
+	from {
+		opacity: 0.4;
+		transform: translateY(-3px);
+	}
+}
+
+/* Status tag under the product name in the cart table. */
+.wmbf-cart-tag {
+	--wmbf-color: #8b8e94;
+	display: block;
+	margin-top: 4px;
+	color: var(--wmbf-color);
+	color: color-mix(in srgb, var(--wmbf-color) 72%, currentColor);
+	font-size: 0.85em;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.wmbf-cart-tag::before {
+	content: "";
+	display: inline-block;
+	width: 7px;
+	height: 7px;
+	margin-right: 6px;
+	border-radius: 50%;
+	background: var(--wmbf-color);
+	vertical-align: 1px;
+}
+
+/* ==========================================================================
+   Shipping schedule (cart and checkout, classic and blocks)
+   ========================================================================== */
+
+.wmbf-ship-plan {
+	--wmbf-line: rgba(0, 0, 0, 0.1);
+	--wmbf-line: color-mix(in srgb, currentColor 14%, transparent);
+	--wmbf-wash: rgba(0, 0, 0, 0.025);
+	--wmbf-wash: color-mix(in srgb, currentColor 4%, transparent);
+	box-sizing: border-box;
+	clear: both;
+	width: 100%;
+	overflow: hidden;
+	border: 1px solid var(--wmbf-line);
+	border-radius: 12px;
+	font-size: 15px;
+	line-height: 1.5;
+	text-align: left;
+}
+
+.wmbf-ship-plan *,
+.wmbf-ship-plan *::before {
+	box-sizing: border-box;
+}
+
+.wmbf-ship-plan svg {
+	flex: none;
+	width: 19px;
+	height: 19px;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	opacity: 0.75;
+}
+
+.wmbf-ship-plan--cart {
+	margin: 28px 0;
+}
+
+.wmbf-ship-plan--cart .wmbf-ship-plan__head {
+	display: grid;
+	gap: 16px;
+	padding: 18px 20px 16px;
+	border-bottom: 1px solid var(--wmbf-line);
+	background: var(--wmbf-wash);
+}
+
+.wmbf-ship-plan .wmbf-ship-plan__title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 18px;
+	font-weight: 700;
+	line-height: 1.3;
+	text-transform: none;
+	letter-spacing: 0;
+}
+
+.wmbf-ship-plan .wmbf-ship-plan__lead {
+	margin: 4px 0 0;
+	font-size: 14px;
+	opacity: 0.75;
+}
+
+.wmbf-ship-plan__steps {
+	position: relative;
+	display: grid;
+	grid-template-columns: repeat(var(--wmbf-n), minmax(0, 1fr));
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.wmbf-ship-plan__steps::before {
+	content: "";
+	position: absolute;
+	top: 7px;
+	right: calc(50% / var(--wmbf-n));
+	left: calc(50% / var(--wmbf-n));
+	height: 2px;
+	background: var(--wmbf-line);
+}
+
+.wmbf-ship-plan__steps li {
+	position: relative;
+	display: grid;
+	justify-items: center;
+	gap: 6px;
+	margin: 0;
+	padding: 0 4px;
+	font-size: 13px;
+	text-align: center;
+}
+
+.wmbf-ship-plan__steps li::marker {
+	content: none;
+}
+
+.wmbf-ship-plan__steps i {
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: var(--wmbf-color);
+}
+
+.wmbf-ship-plan__steps b {
+	font-weight: 600;
+	line-height: 1.25;
+}
+
+.wmbf-ship-plan__steps small {
+	font-size: 12px;
+	opacity: 0.65;
+}
+
+.wmbf-ship-plan--cart .wmbf-ship-group {
+	display: grid;
+	gap: 10px;
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--wmbf-line);
+}
+
+.wmbf-ship-plan--cart .wmbf-ship-group:last-child {
+	border-bottom: 0;
+}
+
+.wmbf-ship-group__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 4px 10px;
+}
+
+.wmbf-ship-plan .wmbf-ship-group__name {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	color: var(--wmbf-color);
+	color: color-mix(in srgb, var(--wmbf-color) 72%, currentColor);
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1.35;
+	text-transform: none;
+	letter-spacing: 0;
+}
+
+.wmbf-ship-plan--cart .wmbf-ship-group__name::before {
+	content: "";
+	flex: none;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: var(--wmbf-color);
+}
+
+.wmbf-ship-group__count {
+	font-size: 13px;
+	opacity: 0.6;
+}
+
+.wmbf-ship-group__subtotal {
+	margin-left: auto;
+	font-size: 14px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
+.wmbf-ship-plan .wmbf-ship-group__desc {
+	margin: 0;
+	font-size: 14px;
+	opacity: 0.8;
+}
+
+.wmbf-ship-plan--cart .wmbf-ship-group__desc,
+.wmbf-ship-group__items {
+	margin-left: 18px;
+}
+
+.wmbf-ship-plan--cart .wmbf-ship-group__desc {
+	margin-top: -6px;
+}
+
+.wmbf-ship-plan .wmbf-ship-group__items {
+	display: grid;
+	gap: 8px;
+	margin-top: 0;
+	margin-bottom: 0;
+	margin-right: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.wmbf-ship-item {
+	display: grid;
+	grid-template-columns: 44px minmax(0, 1fr) auto auto;
+	gap: 12px;
+	align-items: center;
+	margin: 0;
+	font-size: 14px;
+}
+
+.wmbf-ship-item__thumb img {
+	display: block;
+	width: 44px;
+	height: 44px;
+	margin: 0;
+	border-radius: 6px;
+	object-fit: cover;
+}
+
+.wmbf-ship-item__info b {
+	font-weight: 600;
+}
+
+.wmbf-ship-item__info small {
+	display: block;
+	font-size: 12.5px;
+	opacity: 0.6;
+}
+
+.wmbf-ship-item__part {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 0 7px;
+	border: 1px solid var(--wmbf-line);
+	border-radius: 99px;
+	background: var(--wmbf-wash);
+	font-size: 11.5px;
+	font-weight: 600;
+	vertical-align: 1px;
+	white-space: nowrap;
+}
+
+.wmbf-ship-item__qty {
+	font-variant-numeric: tabular-nums;
+	opacity: 0.75;
+}
+
+.wmbf-ship-item__price {
+	min-width: 64px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+}
+
+@media (max-width: 560px) {
+	.wmbf-ship-plan--cart .wmbf-ship-group__desc,
+	.wmbf-ship-group__items {
+		margin-left: 0;
+	}
+
+	.wmbf-ship-item {
+		grid-template-columns: 40px minmax(0, 1fr) auto;
+	}
+
+	.wmbf-ship-item__thumb img {
+		width: 40px;
+		height: 40px;
+	}
+
+	.wmbf-ship-item__qty,
+	.wmbf-ship-plan__steps small {
+		display: none;
+	}
+}
+
+/* Checkout: a compact schedule in the order review. */
+.wmbf-ship-plan--checkout {
+	margin: 0 0 20px;
+	font-size: 14px;
+}
+
+.wmbf-ship-plan--checkout .wmbf-ship-plan__head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 11px 14px;
+	border-bottom: 1px solid var(--wmbf-line);
+	background: var(--wmbf-wash);
+}
+
+.wmbf-ship-plan--checkout .wmbf-ship-plan__head svg {
+	width: 17px;
+	height: 17px;
+}
+
+.wmbf-ship-plan--checkout .wmbf-ship-plan__title {
+	font-size: 14px;
+}
+
+.wmbf-ship-plan__count {
+	margin-left: auto;
+	font-size: 12.5px;
+	opacity: 0.6;
+	white-space: nowrap;
+}
+
+.wmbf-ship-plan--checkout .wmbf-ship-group {
+	display: grid;
+	grid-template-columns: 12px minmax(0, 1fr);
+	gap: 4px 10px;
+	padding: 11px 14px;
+	border-bottom: 1px solid var(--wmbf-line);
+}
+
+.wmbf-ship-plan--checkout .wmbf-ship-group:last-child {
+	border-bottom: 0;
+}
+
+.wmbf-ship-group__dot {
+	width: 10px;
+	height: 10px;
+	margin-top: 6px;
+	border-radius: 50%;
+	background: var(--wmbf-color);
+}
+
+.wmbf-ship-plan--checkout .wmbf-ship-group__name {
+	font-size: 14px;
+}
+
+.wmbf-ship-plan--checkout .wmbf-ship-group__desc {
+	font-size: 13px;
+}
+
+.wmbf-ship-plan .wmbf-ship-group__lines {
+	display: grid;
+	gap: 2px;
+	margin: 4px 0 0;
+	padding: 0;
+	list-style: none;
+	font-size: 13px;
+}
+
+.wmbf-ship-group__lines li {
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+	margin: 0;
+}
+
+.wmbf-ship-group__qty {
+	font-variant-numeric: tabular-nums;
+	opacity: 0.6;
+	white-space: nowrap;
+}
+
+/* Blocks: the schedule sits after the cart items, or in the checkout sidebar. */
+.wc-cbs-blocks-groups {
+	margin: 24px 0 0;
+}
+
+.wc-block-checkout__sidebar .wc-cbs-blocks-groups,
+.wp-block-woocommerce-checkout-order-summary-block .wc-cbs-blocks-groups {
+	margin: 0 16px 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.wc-cbs-backorder-badge.wmbf-status-card {
+		animation: none;
 	}
 }

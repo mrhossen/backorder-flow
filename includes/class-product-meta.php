@@ -66,13 +66,12 @@ class WMBF_Product_Meta {
 	}
 
 	/**
-	 * Enqueue admin scripts for product edit page.
+	 * Enqueue admin scripts for the product edit screen and the products list.
 	 *
 	 * @param string $hook Current admin page hook.
 	 */
 	public function enqueue_admin_scripts( $hook ) {
-		// Only load on product edit pages.
-		if ( 'post.php' !== $hook && 'post-new.php' !== $hook ) {
+		if ( ! in_array( $hook, array( 'post.php', 'post-new.php', 'edit.php' ), true ) ) {
 			return;
 		}
 
@@ -81,62 +80,161 @@ class WMBF_Product_Meta {
 			return;
 		}
 
-		// Enqueue jQuery as dependency.
 		wp_enqueue_script( 'jquery' );
 
-		// Add inline script for backorder status field toggle.
+		// Status color dots for every Backorder Flow select (product, variations, quick and bulk edit).
 		$inline_script = "
 		jQuery(function($) {
-			function getCheckedOrSelected(name) {
-				var \$radio = $('input[name=\"' + name + '\"]:checked');
-				if (\$radio.length) {
-					return \$radio.val();
-				}
-				var \$select = $('select[name=\"' + name + '\"]');
-				return \$select.length ? \$select.val() : null;
+			function syncDot(select) {
+				var \$select = $(select);
+				var \$option = \$select.find('option:selected');
+				var color = \$option.data('color') || '#b9b2c7';
+				\$select.closest('.wmbf-select').find('.wmbf-sel-dot').css('background', color);
+				return \$option;
 			}
 
-			function toggleBackorderStatusField() {
-				var \$field = $('.wc-cbs-backorder-status-field');
-				if (!\$field.length) {
-					return;
-				}
-
-				var productType = $('#product-type').val();
-				var manageStock = $('#_manage_stock').is(':checked');
-				var backorders = getCheckedOrSelected('_backorders');
-				var stockStatus = getCheckedOrSelected('_stock_status');
-
-				// Show the field when the product can be ordered on backorder:
-				// - variable products (variations can allow backorders and use the parent's status),
-				// - stock managed with backorders allowed,
-				// - stock not managed with the stock status set to 'On backorder'.
-				var shouldShow = 'variable' === productType ||
-					(manageStock && ('yes' === backorders || 'notify' === backorders)) ||
-					(!manageStock && 'onbackorder' === stockStatus);
-
-				\$field.toggle(shouldShow);
-				\$field.find('select').prop('disabled', !shouldShow);
-			}
-
-			toggleBackorderStatusField();
-
-			$(document).on(
-				'change',
-				'input[name=\"_backorders\"], select[name=\"_backorders\"], #_manage_stock, input[name=\"_stock_status\"], select[name=\"_stock_status\"], #product-type',
-				function() {
-					// Run after WooCommerce has shown/hidden its own fields.
-					setTimeout(toggleBackorderStatusField, 50);
-				}
-			);
-
-			$('.inventory_options').on('click', function() {
-				setTimeout(toggleBackorderStatusField, 50);
+			$(document).on('change', '.wmbf-select select', function() {
+				syncDot(this);
+			});
+			$('.wmbf-select select').each(function() {
+				syncDot(this);
+			});
+			$(document.body).on('woocommerce_variations_loaded woocommerce_variations_added', function() {
+				$('.woocommerce_variations .wmbf-select select').each(function() {
+					syncDot(this);
+				});
 			});
 		});
 		";
 
+		if ( 'edit.php' !== $hook ) {
+			$inline_script .= "
+			jQuery(function($) {
+				var \$box = $('.wmbf-inline');
+
+				function getCheckedOrSelected(name) {
+					var \$radio = $('input[name=\"' + name + '\"]:checked');
+					if (\$radio.length) {
+						return \$radio.val();
+					}
+					var \$select = $('select[name=\"' + name + '\"]');
+					return \$select.length ? \$select.val() : null;
+				}
+
+				// The customer preview and the hint under the select.
+				function updatePreview() {
+					var \$option = \$box.find('select option:selected');
+					if (!\$option.length) {
+						return;
+					}
+					var \$badge = \$box.find('.wmbf-fe-badge');
+					\$badge.css('--c', \$option.data('color') || '#8b8e94');
+					\$badge.find('strong').text(\$option.data('name') || \$option.text());
+					\$badge.find('span').text(\$option.data('msg') || '').prop('hidden', !\$option.data('msg'));
+				}
+
+				function updateState() {
+					var \$state = \$box.find('.wmbf-inline-state');
+					var productType = $('#product-type').val();
+					var manageStock = $('#_manage_stock').is(':checked');
+					var stock = parseFloat($('#_stock').val());
+					var stockStatus = getCheckedOrSelected('_stock_status');
+					var key = 'later';
+
+					if ('variable' === productType) {
+						key = 'variable';
+					} else if ((manageStock && !isNaN(stock) && stock <= 0) || (!manageStock && 'onbackorder' === stockStatus)) {
+						key = 'live';
+					}
+					\$state.attr('data-state', key).find('span').text(\$state.data(key));
+				}
+
+				function toggleBackorderStatusField() {
+					var \$field = $('.wc-cbs-backorder-status-field');
+					if (!\$field.length) {
+						return;
+					}
+
+					var productType = $('#product-type').val();
+					var manageStock = $('#_manage_stock').is(':checked');
+					var backorders = getCheckedOrSelected('_backorders');
+					var stockStatus = getCheckedOrSelected('_stock_status');
+
+					// Show the field when the product can be ordered on backorder:
+					// - variable products (variations can allow backorders and use the parent's status),
+					// - stock managed with backorders allowed,
+					// - stock not managed with the stock status set to 'On backorder'.
+					var shouldShow = 'variable' === productType ||
+						(manageStock && ('yes' === backorders || 'notify' === backorders)) ||
+						(!manageStock && 'onbackorder' === stockStatus);
+
+					\$field.toggle(shouldShow);
+					\$field.find('select').prop('disabled', !shouldShow);
+					updateState();
+				}
+
+				toggleBackorderStatusField();
+				updatePreview();
+
+				\$box.on('change', 'select', updatePreview);
+
+				$(document).on(
+					'change',
+					'input[name=\"_backorders\"], select[name=\"_backorders\"], #_manage_stock, input[name=\"_stock_status\"], select[name=\"_stock_status\"], #product-type',
+					function() {
+						// Run after WooCommerce has shown/hidden its own fields.
+						setTimeout(toggleBackorderStatusField, 50);
+					}
+				);
+				$(document).on('input change', '#_stock', updateState);
+
+				$('.inventory_options').on('click', function() {
+					setTimeout(toggleBackorderStatusField, 50);
+				});
+			});
+			";
+		}
+
 		wp_add_inline_script( 'jquery', $inline_script );
+	}
+
+	/**
+	 * Print the options of a status select, with each status color and message as data attributes.
+	 *
+	 * @param array       $first         Value => label of the first option(s), which have no status.
+	 * @param string      $selected      Selected value.
+	 * @param string|null $default_value The first option that means "default backorder message", if any.
+	 */
+	private function print_status_options( $first, $selected = '', $default_value = null ) {
+		$default_message = WMBF_Frontend_Display::get_default_message();
+		$default_name    = apply_filters( 'wmbf_default_backorder_label', __( 'On Backorder', 'backorder-flow' ) );
+
+		foreach ( $first as $value => $label ) {
+			$is_default = null !== $default_value && (string) $default_value === (string) $value;
+			printf(
+				'<option value="%1$s" data-color="%2$s" data-name="%3$s" data-msg="%4$s"%5$s>%6$s</option>',
+				esc_attr( $value ),
+				esc_attr( $is_default ? '#8b8e94' : '' ),
+				esc_attr( $is_default ? $default_name : '' ),
+				esc_attr( $is_default ? $default_message : '' ),
+				selected( $selected, $value, false ),
+				esc_html( $label )
+			);
+		}
+
+		foreach ( $this->get_statuses() as $status ) {
+			if ( empty( $status['enabled'] ) ) {
+				continue;
+			}
+			printf(
+				'<option value="%1$s" data-color="%2$s" data-name="%3$s" data-msg="%4$s"%5$s>%3$s</option>',
+				esc_attr( $status['id'] ),
+				esc_attr( isset( $status['color'] ) ? $status['color'] : '' ),
+				esc_attr( $status['name'] ),
+				esc_attr( isset( $status['description'] ) ? $status['description'] : '' ),
+				selected( $selected, $status['id'], false )
+			);
+		}
 	}
 
 	/**
@@ -154,29 +252,40 @@ class WMBF_Product_Meta {
 	public function add_backorder_status_field() {
 		global $post;
 
-		$statuses = $this->get_statuses();
-		$options = array( '' => __( 'Default backorder message', 'backorder-flow' ) );
-
-		foreach ( $statuses as $status ) {
-			if ( isset( $status['enabled'] ) && $status['enabled'] ) {
-				$options[ $status['id'] ] = $status['name'];
-			}
-		}
-
-		echo '<div class="wc-cbs-backorder-status-field options_group show_if_simple show_if_variable" style="display: block;">';
-
-		woocommerce_wp_select(
-			array(
-				'id'          => '_wmbf_backorder_status',
-				'label'       => __( 'Backorder Status', 'backorder-flow' ),
-				'description' => __( 'Select a custom backorder status for this product. Only displayed when the product is on backorder. Variations without their own status use this one.', 'backorder-flow' ),
-				'desc_tip'    => true,
-				'options'     => $options,
-				'value'       => get_post_meta( $post->ID, '_wmbf_backorder_status', true ),
-			)
-		);
-
-		echo '</div>';
+		$value = get_post_meta( $post->ID, '_wmbf_backorder_status', true );
+		?>
+		<div class="wc-cbs-backorder-status-field options_group show_if_simple show_if_variable" style="display: block;">
+			<div class="wmbf-ui wmbf-inline">
+				<div class="wmbf-inline-h">
+					<img src="<?php echo esc_url( WMBF_Admin_Settings::icon_url() ); ?>" alt="" width="20" height="20">
+					<?php esc_html_e( 'Backorder Flow', 'backorder-flow' ); ?>
+					<a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=backorder_status' ) ); ?>" target="_blank"><?php esc_html_e( 'Manage statuses', 'backorder-flow' ); ?><?php WMBF_Admin_Settings::icon( 'ext' ); ?></a>
+				</div>
+				<div class="wmbf-inline-b">
+					<div class="wmbf-field">
+						<label class="wmbf-lbl" for="_wmbf_backorder_status"><?php esc_html_e( 'Backorder status', 'backorder-flow' ); ?></label>
+						<div class="wmbf-select has-dot">
+							<i class="wmbf-sel-dot"></i>
+							<select id="_wmbf_backorder_status" name="_wmbf_backorder_status">
+								<?php $this->print_status_options( array( '' => __( 'Default backorder message', 'backorder-flow' ) ), $value, '' ); ?>
+							</select>
+						</div>
+						<p class="wmbf-help"><?php esc_html_e( 'Shown when this product is on backorder. Variations without their own status use this one.', 'backorder-flow' ); ?></p>
+						<div class="wmbf-inline-state"
+							data-live="<?php esc_attr_e( 'Live: this product is on backorder, so customers see it now.', 'backorder-flow' ); ?>"
+							data-later="<?php esc_attr_e( 'Customers see this once a shopper orders more than you have in stock.', 'backorder-flow' ); ?>"
+							data-variable="<?php esc_attr_e( 'Variations that allow backorders use this unless they have their own status.', 'backorder-flow' ); ?>">
+							<?php WMBF_Admin_Settings::icon( 'check' ); ?><span></span>
+						</div>
+					</div>
+					<div class="wmbf-preview">
+						<div class="wmbf-preview-cap"><span><?php esc_html_e( 'What customers see', 'backorder-flow' ); ?></span></div>
+						<div class="wmbf-fe-badge"><i></i><div><strong></strong><span></span></div></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 
 	/**
@@ -209,26 +318,19 @@ class WMBF_Product_Meta {
 	 * @param WP_Post $variation      Variation post object.
 	 */
 	public function add_variation_backorder_status_field( $loop, $variation_data, $variation ) {
-		$statuses = $this->get_statuses();
-		$options = array( '' => __( 'Same as parent product', 'backorder-flow' ) );
-
-		foreach ( $statuses as $status ) {
-			if ( isset( $status['enabled'] ) && $status['enabled'] ) {
-				$options[ $status['id'] ] = $status['name'];
-			}
-		}
-
 		$current_value = get_post_meta( $variation->ID, '_wmbf_backorder_status', true );
 		?>
-		<p class="form-row form-row-full">
-			<label><?php esc_html_e( 'Backorder Status', 'backorder-flow' ); ?></label>
-			<select name="_wmbf_backorder_status[<?php echo esc_attr( $loop ); ?>]" class="wc-cbs-variation-backorder-status">
-				<?php foreach ( $options as $key => $label ) : ?>
-					<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $current_value, $key ); ?>>
-						<?php echo esc_html( $label ); ?>
-					</option>
-				<?php endforeach; ?>
-			</select>
+		<p class="form-row form-row-full wmbf-ui wmbf-variation-field">
+			<label for="wmbf-variation-status-<?php echo esc_attr( $loop ); ?>">
+				<img src="<?php echo esc_url( WMBF_Admin_Settings::icon_url() ); ?>" alt="" width="14" height="14">
+				<?php esc_html_e( 'Backorder status', 'backorder-flow' ); ?>
+			</label>
+			<span class="wmbf-select has-dot">
+				<i class="wmbf-sel-dot"></i>
+				<select id="wmbf-variation-status-<?php echo esc_attr( $loop ); ?>" name="_wmbf_backorder_status[<?php echo esc_attr( $loop ); ?>]" class="wc-cbs-variation-backorder-status">
+					<?php $this->print_status_options( array( '' => __( 'Same as parent product', 'backorder-flow' ) ), $current_value ); ?>
+				</select>
+			</span>
 		</p>
 		<?php
 	}
@@ -263,23 +365,35 @@ class WMBF_Product_Meta {
 	 * Add quick edit field.
 	 */
 	public function add_quick_edit_field() {
-		$statuses = $this->get_statuses();
+		$this->render_inline_edit_field( 'wc-cbs-quick-edit-backorder-status' );
+	}
+
+	/**
+	 * Print the Backorder status select used by quick edit and bulk edit.
+	 *
+	 * @param string $class Select class.
+	 */
+	private function render_inline_edit_field( $class ) {
 		?>
-		<div class="inline-edit-group">
+		<div class="inline-edit-group wmbf-ui wmbf-inline-edit">
 			<label class="alignleft">
-				<span class="title"><?php esc_html_e( 'Backorder Status', 'backorder-flow' ); ?></span>
+				<span class="title"><?php esc_html_e( 'Backorder', 'backorder-flow' ); ?></span>
 				<span class="input-text-wrap">
-					<select name="_wmbf_backorder_status" class="wc-cbs-quick-edit-backorder-status">
-						<option value=""><?php esc_html_e( '— No Change —', 'backorder-flow' ); ?></option>
-						<option value="_default"><?php esc_html_e( 'Default backorder message', 'backorder-flow' ); ?></option>
-						<?php foreach ( $statuses as $status ) : ?>
-							<?php if ( isset( $status['enabled'] ) && $status['enabled'] ) : ?>
-								<option value="<?php echo esc_attr( $status['id'] ); ?>">
-									<?php echo esc_html( $status['name'] ); ?>
-								</option>
-							<?php endif; ?>
-						<?php endforeach; ?>
-					</select>
+					<span class="wmbf-select has-dot">
+						<i class="wmbf-sel-dot"></i>
+						<select name="_wmbf_backorder_status" class="<?php echo esc_attr( $class ); ?>">
+							<?php
+							$this->print_status_options(
+								array(
+									''         => __( '— No change —', 'backorder-flow' ),
+									'_default' => __( 'Default backorder message', 'backorder-flow' ),
+								),
+								'',
+								'_default'
+							);
+							?>
+						</select>
+					</span>
 				</span>
 			</label>
 		</div>
@@ -316,27 +430,7 @@ class WMBF_Product_Meta {
 	 * Add bulk edit field.
 	 */
 	public function add_bulk_edit_field() {
-		$statuses = $this->get_statuses();
-		?>
-		<div class="inline-edit-group">
-			<label class="alignleft">
-				<span class="title"><?php esc_html_e( 'Backorder Status', 'backorder-flow' ); ?></span>
-				<span class="input-text-wrap">
-					<select name="_wmbf_backorder_status" class="wc-cbs-bulk-edit-backorder-status">
-						<option value=""><?php esc_html_e( '— No Change —', 'backorder-flow' ); ?></option>
-						<option value="_default"><?php esc_html_e( 'Default backorder message', 'backorder-flow' ); ?></option>
-						<?php foreach ( $statuses as $status ) : ?>
-							<?php if ( isset( $status['enabled'] ) && $status['enabled'] ) : ?>
-								<option value="<?php echo esc_attr( $status['id'] ); ?>">
-									<?php echo esc_html( $status['name'] ); ?>
-								</option>
-							<?php endif; ?>
-						<?php endforeach; ?>
-					</select>
-				</span>
-			</label>
-		</div>
-		<?php
+		$this->render_inline_edit_field( 'wc-cbs-bulk-edit-backorder-status' );
 	}
 
 	/**
@@ -372,19 +466,32 @@ class WMBF_Product_Meta {
 	 * @param int    $post_id Post ID.
 	 */
 	public function display_admin_column( $column, $post_id ) {
-		if ( 'backorder_status' === $column ) {
-			$status_id = get_post_meta( $post_id, '_wmbf_backorder_status', true );
-			if ( $status_id ) {
-				$status = WMBF_Admin_Settings::instance()->get_status( $status_id );
-				if ( $status ) {
-					echo '<span style="color: ' . esc_attr( $status['color'] ) . ';">' . esc_html( $status['name'] ) . '</span>';
-				} else {
-					echo '—';
-				}
-			} else {
-				echo '—';
-			}
+		if ( 'backorder_status' !== $column ) {
+			return;
 		}
+
+		$status_id = get_post_meta( $post_id, '_wmbf_backorder_status', true );
+		$status    = $status_id ? WMBF_Admin_Settings::instance()->get_status( $status_id ) : null;
+
+		if ( $status ) {
+			$hidden = empty( $status['enabled'] );
+			printf(
+				'<span class="wmbf-pill%1$s" style="--c:%2$s"%3$s><i></i>%4$s</span>',
+				$hidden ? ' is-muted' : '',
+				esc_attr( isset( $status['color'] ) ? $status['color'] : '#8b8e94' ),
+				$hidden ? ' title="' . esc_attr__( 'This status is turned off, so customers see the default message.', 'backorder-flow' ) . '"' : '',
+				esc_html( $status['name'] )
+			);
+			return;
+		}
+
+		$product = wc_get_product( $post_id );
+		if ( $product && WMBF_Frontend_Display::accepts_backorders( $product ) ) {
+			echo '<span class="wmbf-pill is-muted"><i></i>' . esc_html__( 'Default message', 'backorder-flow' ) . '</span>';
+			return;
+		}
+
+		echo '<span aria-hidden="true">—</span>';
 	}
 
 	/**
@@ -435,16 +542,15 @@ class WMBF_Product_Meta {
 	 * @return array
 	 */
 	public function add_variation_backorder_status_data( $variation_data, $product, $variation ) {
-		// Get the backorder status for this variation
-		$status = self::get_product_backorder_status( $variation );
-
-		if ( ! $status ) {
+		// Only variations that can be ordered on backorder show a status.
+		if ( ! WMBF_Frontend_Display::accepts_backorders( $variation ) ) {
 			return $variation_data;
 		}
 
-		// Check if variation allows backorders
-		if ( ! WMBF_Frontend_Display::accepts_backorders( $variation ) ) {
-			return $variation_data;
+		// Variations without a status (of their own or the parent's) show the default message.
+		$status = self::get_product_backorder_status( $variation );
+		if ( ! $status ) {
+			$status = WMBF_Frontend_Display::get_default_status();
 		}
 
 		// Add backorder status data with stock information.
@@ -452,7 +558,7 @@ class WMBF_Product_Meta {
 		$variation_data['wmbf_backorder_status'] = array(
 			'name'               => $status['name'],
 			'description'        => isset( $status['description'] ) ? $status['description'] : '',
-			'color'              => isset( $status['color'] ) ? $status['color'] : '#ff9800',
+			'color'              => isset( $status['color'] ) ? $status['color'] : '#8b8e94',
 			'stock_quantity'     => $variation->get_stock_quantity(),
 			'managing_stock'     => $variation->managing_stock(),
 			'is_in_stock'        => $variation->is_in_stock(),

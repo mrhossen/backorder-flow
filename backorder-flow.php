@@ -169,23 +169,44 @@ final class WMBF_Plugin {
 	 * WooCommerce missing notice.
 	 */
 	public function woocommerce_missing_notice() {
+		$action = '';
+		$label  = '';
+
+		if ( file_exists( WP_PLUGIN_DIR . '/woocommerce/woocommerce.php' ) ) {
+			if ( current_user_can( 'activate_plugins' ) ) {
+				$action = wp_nonce_url( self_admin_url( 'plugins.php?action=activate&plugin=woocommerce/woocommerce.php' ), 'activate-plugin_woocommerce/woocommerce.php' );
+				$label  = __( 'Activate WooCommerce', 'backorder-flow' );
+			}
+		} elseif ( current_user_can( 'install_plugins' ) ) {
+			$action = wp_nonce_url( self_admin_url( 'update.php?action=install-plugin&plugin=woocommerce' ), 'install-plugin_woocommerce' );
+			$label  = __( 'Install WooCommerce', 'backorder-flow' );
+		}
 		?>
-		<div class="error">
-			<p><?php esc_html_e( 'Backorder Flow requires WooCommerce to be installed and active.', 'backorder-flow' ); ?></p>
+		<div class="notice notice-error wmbf-notice">
+			<img src="<?php echo esc_url( WMBF_ASSETS_URL . 'images/icon.svg' ); ?>" alt="" width="40" height="40">
+			<div>
+				<strong><?php esc_html_e( 'Backorder Flow needs WooCommerce', 'backorder-flow' ); ?></strong>
+				<p><?php esc_html_e( 'Install and activate WooCommerce to start managing backorder statuses.', 'backorder-flow' ); ?></p>
+			</div>
+			<?php if ( $action ) : ?>
+				<a class="button button-primary" href="<?php echo esc_url( $action ); ?>"><?php echo esc_html( $label ); ?></a>
+			<?php endif; ?>
 		</div>
 		<?php
 	}
 
 	/**
-	 * Add settings link to plugins page.
+	 * Add Settings and Docs links to the plugins page.
 	 *
 	 * @param array $links Plugin action links.
 	 * @return array
 	 */
 	public function plugin_action_links( $links ) {
-		$settings_link = '<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=backorder_status' ) ) . '">' . esc_html__( 'Settings', 'backorder-flow' ) . '</a>';
-		array_unshift( $links, $settings_link );
-		return $links;
+		$plugin_links = array(
+			'settings' => '<a href="' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=backorder_status' ) ) . '">' . esc_html__( 'Settings', 'backorder-flow' ) . '</a>',
+			'docs'     => '<a href="' . esc_url( apply_filters( 'wmbf_docs_url', 'https://wpmagician.com/plugins/backorder-flow/' ) ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Docs', 'backorder-flow' ) . '</a>',
+		);
+		return array_merge( $plugin_links, $links );
 	}
 
 	/**
@@ -222,7 +243,7 @@ final class WMBF_Plugin {
 	 * @param string $hook Current admin page hook.
 	 */
 	public function admin_scripts( $hook ) {
-		// Admin styles.
+		// Admin styles. Every rule is scoped to Backorder Flow's own classes.
 		wp_enqueue_style(
 			'wmbf-admin',
 			WMBF_ASSETS_URL . 'css/admin.css',
@@ -235,7 +256,7 @@ final class WMBF_Plugin {
 			return;
 		}
 
-		// Admin scripts.
+		// Admin script. The settings screen prints its data (statuses, strings, nonce) as JSON in the page.
 		wp_enqueue_script(
 			'wmbf-admin',
 			WMBF_ASSETS_URL . 'js/admin.js',
@@ -243,32 +264,6 @@ final class WMBF_Plugin {
 			WMBF_VERSION,
 			true
 		);
-
-		// Localize script.
-		wp_localize_script(
-			'wmbf-admin',
-			'wmbfAdmin',
-			array(
-				'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
-				'nonce'     => wp_create_nonce( 'wmbf_admin_nonce' ),
-				'i18n'      => array(
-					'confirmDelete'      => __( 'Are you sure you want to delete this status?', 'backorder-flow' ),
-					'confirmImport'      => __( 'This will replace all existing statuses. Are you sure?', 'backorder-flow' ),
-					'error'              => __( 'An error occurred. Please try again.', 'backorder-flow' ),
-					'saving'             => __( 'Saving...', 'backorder-flow' ),
-					'saveStatus'         => __( 'Save Status', 'backorder-flow' ),
-					'saveDefaultMessage' => __( 'Save Default Message', 'backorder-flow' ),
-					'addStatus'          => __( 'Add New Status', 'backorder-flow' ),
-					'editStatus'         => __( 'Edit Status', 'backorder-flow' ),
-					'enterName'          => __( 'Please enter a status name.', 'backorder-flow' ),
-					'orderSaved'         => __( 'Status order saved.', 'backorder-flow' ),
-				),
-			)
-		);
-
-		// Color picker.
-		wp_enqueue_style( 'wp-color-picker' );
-		wp_enqueue_script( 'wp-color-picker' );
 	}
 
 	/**

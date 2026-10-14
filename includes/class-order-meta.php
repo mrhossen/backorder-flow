@@ -43,8 +43,8 @@ class WMBF_Order_Meta {
 		// Save backorder information when order is created.
 		add_action( 'woocommerce_checkout_create_order_line_item', array( $this, 'save_backorder_item_meta' ), 10, 4 );
 
-		// Display backorder info in admin order details.
-		add_action( 'woocommerce_admin_order_data_after_order_details', array( $this, 'display_admin_order_backorder_info' ) );
+		// Shipping groups box on the admin order screen (classic and HPOS).
+		add_action( 'add_meta_boxes', array( $this, 'add_shipping_groups_meta_box' ), 40, 2 );
 
 		// Display backorder info on customer order details page.
 		add_action( 'woocommerce_order_details_after_order_table', array( $this, 'display_customer_order_backorder_info' ) );
@@ -97,6 +97,46 @@ class WMBF_Order_Meta {
 	}
 
 	/**
+	 * Add the Shipping groups box to orders that contain backordered items.
+	 *
+	 * @param string           $screen_id      Current screen ID.
+	 * @param WP_Post|WC_Order $post_or_order  Post (classic orders) or order (HPOS).
+	 */
+	public function add_shipping_groups_meta_box( $screen_id, $post_or_order = null ) {
+		$order_screens = array( 'shop_order' );
+		if ( function_exists( 'wc_get_page_screen_id' ) ) {
+			$order_screens[] = wc_get_page_screen_id( 'shop-order' );
+		}
+		if ( ! in_array( $screen_id, $order_screens, true ) ) {
+			return;
+		}
+
+		$order = $post_or_order instanceof WP_Post ? wc_get_order( $post_or_order->ID ) : $post_or_order;
+		if ( ! $order instanceof WC_Order || ! self::groups_have_backorder( self::get_order_groups( $order ) ) ) {
+			return;
+		}
+
+		add_meta_box(
+			'wmbf-shipping-groups',
+			__( 'Backorder Flow', 'backorder-flow' ),
+			array( $this, 'render_shipping_groups_meta_box' ),
+			$screen_id,
+			'normal',
+			'high'
+		);
+	}
+
+	/**
+	 * Render the Shipping groups box.
+	 *
+	 * @param WP_Post|WC_Order $post_or_order Post (classic orders) or order (HPOS).
+	 */
+	public function render_shipping_groups_meta_box( $post_or_order ) {
+		$order = $post_or_order instanceof WP_Post ? wc_get_order( $post_or_order->ID ) : $post_or_order;
+		$this->display_admin_order_backorder_info( $order );
+	}
+
+	/**
 	 * Display backorder information in admin order details.
 	 *
 	 * @param WC_Order $order Order object.
@@ -108,24 +148,71 @@ class WMBF_Order_Meta {
 			return;
 		}
 
+		$count = count( $groups );
 		?>
-		<div class="wc-cbs-order-backorder-info" style="margin-top: 20px;">
-			<h3><?php esc_html_e( 'Backorder Shipping Groups', 'backorder-flow' ); ?></h3>
-			<?php foreach ( $groups as $group ) : ?>
-				<div class="wc-cbs-order-group" style="margin-bottom: 15px; padding: 10px; border-left: 4px solid <?php echo esc_attr( $group['color'] ); ?>; background: #f9f9f9;">
-					<h4 style="margin: 0 0 10px; color: <?php echo esc_attr( $group['color'] ); ?>;">
-						<?php echo esc_html( $group['name'] ); ?>
-					</h4>
-					<ul style="margin: 0; padding-left: 20px;">
+		<div class="wmbf-ui wmbf-ship">
+			<div class="wmbf-ship-h">
+				<img src="<?php echo esc_url( WMBF_Admin_Settings::icon_url() ); ?>" alt="" width="24" height="24">
+				<h3><?php esc_html_e( 'Shipping groups', 'backorder-flow' ); ?></h3>
+				<span class="wmbf-tag is-purple">
+					<?php
+					/* translators: %d: number of shipments */
+					echo esc_html( sprintf( _n( '%d shipment', '%d shipments', $count, 'backorder-flow' ), $count ) );
+					?>
+				</span>
+				<span class="wmbf-ship-help">
+					<?php
+					/* translators: %d: number of shipments */
+					echo esc_html( sprintf( _n( 'This order ships in %d part.', 'This order ships in %d parts. The customer sees the same groups in their emails.', $count, 'backorder-flow' ), $count ) );
+					?>
+				</span>
+			</div>
+			<div class="wmbf-ship-track" style="--wmbf-n: <?php echo (int) min( $count, 3 ); ?>">
+				<?php foreach ( $groups as $group ) : ?>
+					<?php
+					$units = 0;
+					foreach ( $group['items'] as $item_data ) {
+						$units += (int) $item_data['quantity'];
+					}
+					?>
+					<div class="wmbf-ship-g" style="--c: <?php echo esc_attr( $group['color'] ); ?>">
+						<div class="wmbf-ship-bar"></div>
+						<div class="wmbf-ship-g-h">
+							<span class="wmbf-pill" style="--c: <?php echo esc_attr( $group['color'] ); ?>"><i></i><?php echo esc_html( $group['name'] ); ?></span>
+							<small>
+								<?php
+								/* translators: %d: number of items */
+								echo esc_html( sprintf( _n( '%d item', '%d items', $units, 'backorder-flow' ), $units ) );
+								?>
+							</small>
+						</div>
 						<?php foreach ( $group['items'] as $item_data ) : ?>
-							<li>
-								<?php echo esc_html( $item_data['product']->get_name() ); ?>
-								<strong>× <?php echo (int) $item_data['quantity']; ?></strong>
-							</li>
+							<?php
+							$product  = $item_data['product'];
+							$item     = $item_data['item'];
+							$details  = array();
+							if ( $product->is_type( 'variation' ) ) {
+								$details[] = wc_get_formatted_variation( $product, true, false );
+							}
+							if ( (int) $item_data['quantity'] < (int) $item->get_quantity() ) {
+								/* translators: 1: quantity in this group, 2: total quantity of the line */
+								$details[] = sprintf( __( '%1$d of %2$d', 'backorder-flow' ), (int) $item_data['quantity'], (int) $item->get_quantity() );
+							}
+							?>
+							<div class="wmbf-ship-i">
+								<?php echo wp_kses_post( $product->get_image( array( 32, 32 ) ) ); ?>
+								<div>
+									<b><?php echo esc_html( $item->get_name() ); ?></b>
+									<?php if ( $details ) : ?>
+										<span><?php echo esc_html( implode( ' · ', array_filter( $details ) ) ); ?></span>
+									<?php endif; ?>
+								</div>
+								<span class="wmbf-ship-q">× <?php echo (int) $item_data['quantity']; ?></span>
+							</div>
 						<?php endforeach; ?>
-					</ul>
-				</div>
-			<?php endforeach; ?>
+					</div>
+				<?php endforeach; ?>
+			</div>
 		</div>
 		<?php
 	}
@@ -226,19 +313,19 @@ class WMBF_Order_Meta {
 			return;
 		}
 
-		$has_backorder = false;
-		foreach ( $order->get_items() as $item ) {
-			$backorder_qty = $item->get_meta( '_wmbf_backorder_quantity', true );
-			if ( $backorder_qty ) {
-				$has_backorder = true;
-				break;
-			}
-		}
+		$groups = self::get_order_groups( $order );
 
-		if ( $has_backorder ) {
-			echo '<span class="dashicons dashicons-clock" style="color: #ff9800;" title="' . esc_attr__( 'Contains backorder items', 'backorder-flow' ) . '"></span>';
+		if ( self::groups_have_backorder( $groups ) ) {
+			$count = count( $groups );
+			printf(
+				'<span class="wmbf-chip" title="%1$s">%2$s%3$s</span>',
+				esc_attr( implode( ', ', wp_list_pluck( $groups, 'name' ) ) ),
+				WMBF_Admin_Settings::icon( 'clock', true ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG markup.
+				/* translators: %d: number of shipments */
+				esc_html( sprintf( _n( '%d shipment', '%d shipments', $count, 'backorder-flow' ), $count ) )
+			);
 		} else {
-			echo '—';
+			echo '<span aria-hidden="true">—</span>';
 		}
 	}
 
@@ -262,7 +349,7 @@ class WMBF_Order_Meta {
 		$groups['ships_now'] = array(
 			'id'       => 'ships_now',
 			'name'     => apply_filters( 'wmbf_ships_now_label', __( 'Ships Now', 'backorder-flow' ) ),
-			'color'    => apply_filters( 'wmbf_ships_now_color', '#4caf50' ),
+			'color'    => apply_filters( 'wmbf_ships_now_color', '#2e9e63' ),
 			'priority' => 0,
 			'items'    => array(),
 		);
@@ -347,7 +434,7 @@ class WMBF_Order_Meta {
 			return array(
 				'id'       => 'default_backorder',
 				'name'     => apply_filters( 'wmbf_default_backorder_label', __( 'On Backorder', 'backorder-flow' ) ),
-				'color'    => apply_filters( 'wmbf_default_backorder_color', '#9e9e9e' ),
+				'color'    => apply_filters( 'wmbf_default_backorder_color', '#8b8e94' ),
 				'priority' => PHP_INT_MAX,
 				'items'    => array(),
 			);
